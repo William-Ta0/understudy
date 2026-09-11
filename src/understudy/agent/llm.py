@@ -123,13 +123,17 @@ class OpenAICompatLLM:
         except ImportError as e:  # optional dependency
             raise LLMError("install the 'openai' extra: uv sync --extra openai") from e
         self._openai = openai
-        self.client = openai.AsyncOpenAI(base_url=os.environ.get("OPENAI_BASE_URL") or None, max_retries=3)
+        # Cross-region endpoints behind proxies can take seconds just for the TLS handshake.
+        self.client = openai.AsyncOpenAI(base_url=os.environ.get("OPENAI_BASE_URL") or None, max_retries=3,
+                                         timeout=openai.Timeout(180.0, connect=30.0))
         self.model = model or os.environ.get("UNDERSTUDY_MODEL", "gpt-4.1")
+        # Text-only models get the UI map alone; the policy may allow screenshots, the model may not take them.
+        self.vision = os.environ.get("UNDERSTUDY_VISION", "1") != "0"
 
     async def decide(self, system: str, text: str, image_png: bytes | None, tools: list[dict[str, Any]],
                      observation: Observation | None = None) -> Decision:
         parts: list[dict[str, Any]] = [{"type": "text", "text": text}]
-        if image_png:
+        if image_png and self.vision:
             b64 = base64.standard_b64encode(image_png).decode()
             parts.append({"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64}"}})
         fns = [{"type": "function", "function": {"name": t["name"], "description": t["description"],

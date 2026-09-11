@@ -8,7 +8,7 @@ capture as a real operator's actions.
 
     operator: sup_kim
     handlers:
-      - on: human_required            # intervention kind to wait for
+      - kind: human_required          # intervention kind to wait for
         actions:
           - click: {label: Supervisor ID}
           - type: sup_kim
@@ -59,19 +59,22 @@ async def run_operator(console_base: str, token: str, script_path: str | Path, *
             if not pending:
                 continue
             h = handlers[0]
-            if h.get("on") and pending["request"]["kind"] != h["on"]:
-                continue
+            if h.get("kind") and pending["request"]["kind"] != h["kind"]:
+                continue  # not the intervention this script is for: leave it for someone else
             handlers.pop(0)
             rid = pending["run_id"]
             await asyncio.sleep(float(h.get("think_s", 1.0)))  # a human reads the request first
             actions = h.get("actions", [])
-            if actions:
-                r = await http.post(f"/api/sessions/{rid}/claim", json={"operator": operator})
-                r.raise_for_status()
-            for act in actions:
-                await _do(http, rid, operator, act)
-                await asyncio.sleep(float(h.get("pace_s", 0.6)))
             rel = h.get("release", {"resolution": "resume"})
+            try:
+                if actions:
+                    r = await http.post(f"/api/sessions/{rid}/claim", json={"operator": operator})
+                    r.raise_for_status()
+                for act in actions:
+                    await _do(http, rid, operator, act)
+                    await asyncio.sleep(float(h.get("pace_s", 0.6)))
+            except Exception as e:  # never leave a live session held by a script that gave up
+                rel = {"resolution": "abort", "note": f"operator script failed: {e}"}
             r = await http.post(f"/api/sessions/{rid}/release", json={"operator": operator, **rel})
             r.raise_for_status()
             done.append({"run_id": rid, "kind": pending["request"]["kind"], "resolution": rel["resolution"]})

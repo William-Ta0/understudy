@@ -146,6 +146,7 @@ class DiscoveryAgent:
                 await self._stuck("the model stopped calling tools")
             return
         self.no_tool_in_a_row = 0
+        self._frames_before = {f.key: f.url for f in obs.frames}
         result = await self._execute(call, obs, screen, decision.text)
         self.history.append(f"{self.turn}. {self._summarize_call(call, obs)} -> {result}")
         if result.startswith(("ERROR", "BLOCKED")):
@@ -242,6 +243,7 @@ class DiscoveryAgent:
 
     async def _act(self, name: str, a: dict[str, Any], screen: str | None, said: str) -> str:
         action = ACTION_TOOLS[name]
+        option_value: str | None = None
         described, handle = await self._describe(a)
         if described is None and name != "press_key":
             return "ERROR: that ref is not in the current UI map (or the frame navigated since). Use a ref from the latest map."
@@ -266,7 +268,7 @@ class DiscoveryAgent:
             await self.surface.fill(res, self.render(value))
         elif name == "select_option":
             value = str(a.get("option", ""))
-            await self.surface.select(res, self.render(value))
+            option_value = await self.surface.select(res, self.render(value))
         elif name == "press_key":
             value = str(a.get("key", "Enter"))
             await self.surface.press(value, res if handle is not None else None)
@@ -274,9 +276,10 @@ class DiscoveryAgent:
         after = await self.evaluator.current_screen()
         sens = (described or {}).get("sensitive")
         stored = value
-        if value is not None and sens in ("pii", "financial", "secret") and "{{" not in value:
-            stored = f"[{sens}]"
-        self._record(action, purpose, intent, said, screen, described, stored, decision.risk, screen_after=after)
+        if value is not None and "{{" not in value and (sens in ("pii", "financial", "secret") or self.redactor.text(value) != value):
+            stored = f"[{sens or 'sensitive'}]"
+        self._record(action, purpose, intent, said, screen, described, stored, decision.risk, screen_after=after,
+                     option_value=option_value)
         msg = "ok"
         if after != screen:
             msg += f"; the screen is now {after or 'unrecognised'}"
@@ -340,8 +343,20 @@ class DiscoveryAgent:
         reason = self.redactor.text(str(a.get("reason", "")))
         if self.control is None:
             return "ERROR: no human operator is attached to this run. If you cannot proceed, finish with status impossible."
+        visible = self._pending_outputs_on_screen()
+        if kind == "approval" and visible:
+            return (f"ERROR: before handing over, extract the outputs shown on this screen: {visible}. "
+                    "After an irreversible step you cannot come back to it.")
         res = await self._escalate("approval" if kind == "approval" else "stuck", reason, screen)
         return self._after_human_text(res)
+
+    def _pending_outputs_on_screen(self) -> list[str]:
+        """Pending outputs whose name reads like a label on the current screen (dividend_rate ~ 'Dividend Rate:')."""
+        obs = self.surface.last_observation
+        if obs is None:
+            return []
+        texts = {" ".join(n.get("text", "").lower().replace(":", " ").split()) for f in obs.frames for n in f.nodes}
+        return [o for o in self.goal.outputs if o not in self.extracted and " ".join(o.lower().split("_")) in texts]
 
     async def _finish_tool(self, a: dict[str, Any], screen: str | None) -> str:
         status = str(a.get("status"))
@@ -462,7 +477,8 @@ class DiscoveryAgent:
 
     def _record(self, action: str, purpose: str, intent: str, said: str, screen: str | None, described: dict[str, Any] | None,
                 value: str | None, risk: Risk, *, ok: bool = True, error: str | None = None, screen_after: str | None = None,
-                output: str | None = None, checkpoint: Any = None, dialog_message: str | None = None) -> None:
+                output: str | None = None, checkpoint: Any = None, dialog_message: str | None = None,
+                option_value: str | None = None) -> None:
         target = None
         if described:
             cands = [Candidate(**c) for c in described.get("candidates", [])]
@@ -477,7 +493,8 @@ class DiscoveryAgent:
             rationale += f" | dialog: {self.redactor.text(dialog_message)}"
         step = TraceStep(index=len(self.trace.steps), actor="agent", purpose=purpose if purpose in ("flow", "incidental", "exploratory") else "flow",
                          action=action, rationale=rationale, screen_before=screen, screen_after=screen_after,
-                         target=target, value=value, output=output, checkpoint=checkpoint, risk=risk, ok=ok, error=error,
+                         target=target, value=value, option_value=option_value, output=output, checkpoint=checkpoint, risk=risk, ok=ok, error=error,
+                         frames_before=getattr(self, "_frames_before", {}),
                          frames_after={k: f.url for k, f in self.surface.frames()}, at=_now())
         self.trace.steps.append(step)
         self.ev.event("trace_step", actor="agent", index=step.index, action=action, purpose=step.purpose, ok=ok, error=error,

@@ -3,7 +3,7 @@
 # The override code comes from $KEYSTONE_SUPERVISOR_CODE, never from this file.
 operator: sup.kim
 handlers:
-  - on: human_required
+  - kind: human_required
     think_s: 1.5
     actions:
       - click: {role: textbox, label: Supervisor ID}
@@ -12,6 +12,6 @@ handlers:
       - type_env: KEYSTONE_SUPERVISOR_CODE
       - click: {role: button, name: Submit Override}
     release: {resolution: resume, note: Supervisor authorised the deposit at the workstation.}
-  - on: approval
+  - kind: approval
     think_s: 1.0
     release: {resolution: approve, note: Member confirmed the details.}

@@ -43,8 +43,8 @@ def render_node(n: dict, mask: set[str]) -> str:
         if n.get("options"):
             opts = [(o["label"], o.get("value", "")) for o in n["options"]]
             sel = next((o["label"] for o in n["options"] if o.get("selected")), None)
-            shown = [_q(lab, 48) + (f"(={val})" if val and val != lab else "") for lab, val in opts[:15]]
-            parts.append("options=[" + ", ".join(shown) + (", …" if len(opts) > 15 else "") + "]")
+            shown = [_q(lab, 48) + (f" [value={val}]" if val and val != lab else "") for lab, val in opts[:15]]
+            parts.append("options: " + " | ".join(shown) + (" | …" if len(opts) > 15 else ""))
             if sel is not None:
                 parts.append(f"selected={_q(sel, 48)}")
     elif role in ("button", "link"):

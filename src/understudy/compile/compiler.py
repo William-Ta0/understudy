@@ -84,6 +84,7 @@ class Compiler:
         if not trace.finish or trace.finish.status != "success":
             raise CompileError(f"discovery did not succeed ({trace.finish.status if trace.finish else 'unfinished'})", [])
         self.params = sorted(((v, k) for k, v in inputs.items() if len(v) >= 3), key=lambda x: -len(x[0]))
+        self.exact = {v: k for k, v in inputs.items() if v}  # a whole value equal to an input is templated at any length
         self.notes: list[ReviewNote] = []
         steps: list[dict[str, Any]] = []
         outputs: dict[str, dict[str, Any]] = {}
@@ -92,6 +93,8 @@ class Compiler:
         self.asked = {i: iv.reason for iv in trace.interventions for i in iv.human_steps}
         stuck_help = {i for iv in trace.interventions if iv.kind in ("stuck", "takeover") for i in iv.human_steps}
 
+        detours = self._detours(trace)
+        inherited_screen: str | None = None
         for p in trace.platform:
             self.note("info", None, f"platform handled runtime condition '{p['condition']}' ({p['action']}) during discovery; "
                                     "replay handles it the same way, so it is not a step")
@@ -101,6 +104,11 @@ class Compiler:
                 continue
             if ts.index in human_required:
                 self.note("info", None, f"operator step {ts.index} resolved a human_required condition; replay escalates to a human there too")
+                continue
+            if ts.index in detours:
+                self.note("info", None, f"dropped detour step {ts.index} ('{ts.rationale.split(' | ')[0][:70]}'): it led to an "
+                                        "unrecognised screen, and the next action replaced that frame's content without using it")
+                inherited_screen = ts.screen_before  # the next step really starts from where the detour started
                 continue
             if ts.purpose == "exploratory":
                 self.note("info", None, f"dropped exploratory step {ts.index}: {ts.rationale[:80]}")
@@ -118,6 +126,9 @@ class Compiler:
             step = self._action_step(ts, trace, idx, ids)
             if step is None:
                 continue
+            if inherited_screen and "screen" not in step:
+                step["screen"] = inherited_screen
+            inherited_screen = None
             if ts.actor == "human" and ts.index in stuck_help:
                 self.note("warning", step["id"], "demonstrated by a human operator after the agent got stuck; review it closely")
             steps.append(step)
@@ -169,6 +180,21 @@ class Compiler:
             cap = cap.model_copy(update={"version": store.next_version(cap)})
         return cap
 
+    @staticmethod
+    def _detours(trace: Trace) -> set[int]:
+        """Navigation whose result was thrown away, like a dead store: step k opened an unrecognised
+        screen in frame F, and the next action happened elsewhere and loaded new content into F."""
+        acts = [s for s in trace.steps if s.actor == "agent" and s.ok and s.action in ("click", "fill", "select", "press")]
+        out: set[int] = set()
+        for k, n in zip(acts, acts[1:]):
+            if k.action != "click" or k.purpose != "flow" or k.screen_after is not None or not k.frames_before:
+                continue
+            changed_k = {f for f, u in k.frames_after.items() if k.frames_before.get(f) != u}
+            changed_n = {f for f, u in n.frames_after.items() if n.frames_before.get(f) != u}
+            if changed_k and n.target is not None and n.target.frame not in changed_k and changed_k <= changed_n:
+                out.add(k.index)
+        return out
+
     def note(self, level: str, step: str | None, message: str) -> None:
         self.notes.append(ReviewNote(level=level, step=step, message=self.redactor.text(message)))  # type: ignore[arg-type]
 
@@ -186,8 +212,10 @@ class Compiler:
         if ts.actor == "human" and (not intent or intent.startswith("operator")):
             what = f'{ts.action} {ts.target.role} "{ts.target.name or ts.target.label or ts.target.text[:40]}"' if ts.target else ts.action
             asked = self.asked.get(ts.index)
+            if asked and len(asked) > 160:
+                asked = asked[:157].rsplit(" ", 1)[0] + "..."
             intent = f"Human operator: {what}" + (f" (asked for: {asked})" if asked else "")
-        return self.redactor.text(intent or ts.action)
+        return self._generalize_text(self.redactor.text(intent or ts.action))
 
     def _screen_after(self, trace: Trace, idx: int, ts: TraceStep) -> str | None:
         """The screen the action led to. The next observation is authoritative: by then the app has settled."""
@@ -225,7 +253,7 @@ class Compiler:
             if action == "fill":
                 step["value"] = self._value(ts.value or "", f"step {ts.index}")
             elif action == "select":
-                step["option"] = self._value(ts.value or "", f"step {ts.index}")
+                step["option"] = self._option(ts, f"step {ts.index}")
             elif action == "press":
                 step["key"] = ts.value or "Enter"
         step["id"] = self._unique_id(f"{VERB.get(action, action)}_{_slug(self._generalize_text(label))}", ids)
@@ -323,8 +351,8 @@ class Compiler:
         if s in self.inverse_vocab:
             s = self.inverse_vocab[s]
         for literal, name in self.params:
-            if literal in s and "{{" not in s:
-                s = s.replace(literal, f"{{{{inputs.{name}}}}}")
+            if literal in s:  # whole tokens only: "100234" must not match inside "$1,002,345.00"
+                s = re.sub(rf"(?<![\w.,$]){re.escape(literal)}(?![\w])", f"{{{{inputs.{name}}}}}", s)
         return s
 
     def _generalize(self, x: Any) -> Any:
@@ -336,7 +364,27 @@ class Compiler:
             return [self._generalize(v) for v in x]
         return x
 
+    def _option(self, ts: TraceStep, where: str) -> str:
+        """Prefer a template; then the option's underlying value when its label carries volatile data
+        (e.g. "00 - Share Savings ($25,310.77 avail)"); a plain label last."""
+        label, val = ts.value or "", ts.option_value
+        for candidate in (label, val):
+            if candidate and candidate in self.exact:
+                return f"{{{{inputs.{self.exact[candidate]}}}}}"
+        g = self._generalize_text(label)
+        if "{{" in g and not self._has_sensitive(g):
+            return g
+        if val:
+            gv = self._generalize_text(val)
+            if gv != val or self._has_sensitive(label) or label.startswith("["):
+                if gv == val:
+                    self.note("warning", None, f"{where}: selects the option with value '{val}' (its label shows member data)")
+                return gv
+        return self._value(label, where)
+
     def _value(self, v: str, where: str) -> str:
+        if v in self.exact:
+            return f"{{{{inputs.{self.exact[v]}}}}}"
         g = self._generalize_text(v)
         if "{{" not in g:
             if self._has_sensitive(g):

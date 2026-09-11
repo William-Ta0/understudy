@@ -138,3 +138,36 @@ def test_unsuccessful_discovery_does_not_compile():
     trace.finish = Finish(status="impossible", summary="no such member")
     with pytest.raises(CompileError):
         comp.compile(trace, {"member_id": "100234"})
+
+
+def test_detours_are_pruned():
+    comp, _ = _compiler()
+    trace = _lookup_trace()
+    home = {"top": "/default.asp", "nav": "/menu.asp", "main": "/welcome.asp"}
+    wrong = _step(50, "click", before="workstation_home", after=None, rationale="Open sub-account first",
+                  target=_t("nav", "button", name="Open Sub-Account", cands=[{"by": "role", "role": "button", "name": "Open Sub-Account"}]))
+    wrong.frames_before, wrong.frames_after = home, {**home, "main": "/shareadd.asp"}
+    first = trace.steps[0]
+    first.screen_before = None
+    first.frames_before, first.frames_after = {**home, "main": "/shareadd.asp"}, {**home, "main": "/mbrinq.asp"}
+    trace.steps.insert(0, wrong)
+    cap = comp.compile(trace, {"member_id": "100234"})
+    assert cap.steps[0].id == "click_member_inquiry"
+    assert any("detour" in n.message for n in cap.review.notes)
+
+
+def test_select_prefers_the_option_value_when_the_label_shows_member_data():
+    comp, r = _compiler()
+    trace = _lookup_trace()
+    r.register("$25,310.77", Sensitivity.financial)
+    pick = _step(60, "select", before="member_search", value="00 - Share Savings ($25,310.77 avail)", rationale="Choose funding",
+                 target=_t("main", "combobox", label="Fund From", cands=[{"by": "label", "role": "combobox", "label": "Fund From"}]))
+    pick.option_value = "00"
+    trace.steps.insert(2, pick)
+    goal = trace.goal.model_copy(update={"inputs": {**trace.goal.inputs,
+                                                     "fund_from": trace.goal.inputs["member_id"].model_copy(update={"pattern": "^[0-9]{2}$"})}})
+    trace.goal = goal
+    cap = comp.compile(trace, {"member_id": "100234", "fund_from": "00"})
+    step = next(s for s in cap.steps if s.action == "select")
+    assert step.option == "{{inputs.fund_from}}"  # the stable option value, templated; never the label with a balance
+    assert "25,310" not in str(cap.dump())

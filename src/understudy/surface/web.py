@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 import time
 from collections.abc import Awaitable, Callable
 from pathlib import Path
@@ -377,6 +378,10 @@ class WebSurface:
 
     async def select(self, res: Resolution, option: str) -> str:
         opts: list[list[str]] = await res.handle.evaluate("el => Array.from(el.options).map(o => [o.text.trim(), o.value])")
+        m = re.match(r'^"?(.*?)"?\s*(?:\[value=([^\]]*)\]|\(=([^)]*)\))\s*$', option.strip())
+        if m:  # the UI map's own notation was copied back: '"Label" [value=X]'
+            label, val = m.group(1), m.group(2) or m.group(3)
+            option = label if any(" ".join(t.split()).lower() == " ".join(label.split()).lower() for t, _ in opts) else val
         want = " ".join(option.split()).lower()
         norm = lambda t: " ".join(t.split()).lower()  # noqa: E731
         # Exact visible label, then exact option value, then a unique label that starts with the text ("00 - ...").

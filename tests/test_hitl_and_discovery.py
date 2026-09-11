@@ -106,7 +106,7 @@ async def test_supervisor_takes_over_the_live_session_and_hands_back(mock, evide
 async def test_operator_rejection_is_a_business_outcome(mock, evidence_dir, tmp_path):
     cap = await _open_account_cap()
     script = tmp_path / "reject.yaml"
-    script.write_text("operator: ops.jlee\nhandlers:\n  - on: approval\n    think_s: 0.2\n"
+    script.write_text("operator: ops.jlee\nhandlers:\n  - kind: approval\n    think_s: 0.2\n"
                       "    release: {resolution: reject, note: member changed their mind}\n")
     async with operator_console(Router(), port=_port(), operator_script=script) as c:
         res = await run_replay(cap, "lakeshore", OPEN, control=c, options=ReplayOptions(supervised=True))

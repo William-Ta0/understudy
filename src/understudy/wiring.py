@@ -60,12 +60,15 @@ async def open_env(tenant_id: str, *, kind: str, label: str, control: ControlCen
 
 async def run_replay(cap_ref: str | Capability, tenant_id: str, inputs: dict[str, Any], *,
                      options: ReplayOptions | None = None, control: ControlCenter | None = None, headless: bool = True,
-                     label: str | None = None, evidence_dir: Path | None = None) -> RunResult:
+                     label: str | None = None, evidence_dir: Path | None = None, tenant_overrides: bool = True) -> RunResult:
     cap = cap_ref if isinstance(cap_ref, Capability) else CapabilityStore().load(cap_ref)
     env = await open_env(tenant_id, kind="replay", label=label or cap.id.split(".")[-1], control=control,
                          headless=headless, evidence_dir=evidence_dir)
     try:
-        eff, applied = effective_capability(cap, env.tenant)
+        if tenant_overrides:
+            eff, applied = effective_capability(cap, env.tenant)
+        else:  # the capability exactly as recorded; the app profile stays tenant-aware
+            eff, applied = cap, ["capability-level tenant vocabulary and overrides disabled for this run"]
         engine = ReplayEngine(eff, env.profile, env.tenant, env.guard, env.surface, env.evidence, env.redactor,
                               env.session, options or ReplayOptions(), applied)
         return await engine.run(inputs)

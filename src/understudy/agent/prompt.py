@@ -32,8 +32,8 @@ How to act:
   procedure.
 - When you reach a state that proves progress (the right record is open, the review screen is showing),
   record a checkpoint that a machine can verify, such as a heading text.
-- Read each declared output with `extract`, pointing at the element that shows the value itself (the table
-  cell, not its column header or its label).
+- Read each declared output with `extract` as soon as it is on screen (you may not be able to come back to
+  that screen), pointing at the element that shows the value itself (the table cell, not its header or label).
 - Values shown as [pii] or [secret] are hidden for privacy. You do not need to see them.
 
 Limits you must respect:
@@ -74,7 +74,7 @@ TOOLS: list[dict[str, Any]] = [
             ["ref", "value"]),
     _action("select_option", "Choose an option in a drop-down by its visible label.",
             {"ref": {"type": "string"},
-             "option": {"type": "string", "description": "Visible option label, or the option value shown as (=value), or {{inputs.<name>}}."}},
+             "option": {"type": "string", "description": "The option's visible label, or its value (shown as [value=...]), or {{inputs.<name>}}."}},
             ["ref", "option"]),
     _action("press_key", "Press a key, optionally with focus on an element.",
             {"key": {"type": "string", "description": "e.g. Enter, Tab, Escape."}, "ref": {"type": "string"}}, ["key"]),

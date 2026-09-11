@@ -76,11 +76,13 @@ class TraceStep(Model):
     screen_after: str | None = None
     target: DescribedTarget | None = None
     value: str | None = Field(default=None, description="Template or redacted literal for fill/select/press/dialog.")
+    option_value: str | None = Field(default=None, description="For select: the underlying value of the chosen option.")
     output: str | None = Field(default=None, description="Output name for extract steps.")
     checkpoint: Condition | None = None
     risk: Risk = Risk.reversible
     ok: bool = True
     error: str | None = None
+    frames_before: dict[str, str] = Field(default_factory=dict)
     frames_after: dict[str, str] = Field(default_factory=dict)
     at: datetime
 

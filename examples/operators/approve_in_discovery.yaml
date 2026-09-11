@@ -2,7 +2,7 @@
 # that policy forbids the model to do, in the same live session, then hands control back.
 operator: ops.jlee
 handlers:
-  - on: approval
+  - kind: approval
     think_s: 1.5
     actions:
       - click: {role: button, name: "Confirm & Open Account"}

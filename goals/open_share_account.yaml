@@ -7,10 +7,10 @@ title: Open a share sub-account for a member
 goal: >-
   For member {{inputs.member_id}}, open a new sub-account of product {{inputs.product}} with the account
   nickname {{inputs.nickname}} and an opening deposit of {{inputs.opening_deposit}}, funded from the member's
-  existing account with suffix {{inputs.fund_from}}. Get to the review screen and read the dividend rate shown
-  there. Opening the account is an irreversible confirmation that a human operator must approve and perform:
-  ask for it when you are on the review screen. Once the account is open, read the confirmation number and
-  the new account suffix.
+  existing account with suffix {{inputs.fund_from}}. Continue to the review screen. On the review screen, first
+  read the dividend rate, then ask a human operator to approve and perform the final confirmation, which is
+  irreversible and not yours to do. When the operator hands back, read the confirmation number and the new
+  account suffix from the confirmation screen, and finish.
 app_profile: keystone-core@7
 entry: workstation_home
 inputs:

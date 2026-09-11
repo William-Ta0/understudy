@@ -189,7 +189,9 @@ def discover(
 
     res = asyncio.run(main())
     t = res.trace
-    out.print(Panel(f"status: [bold]{t.finish.status if t.finish else '?'}[/] - {t.finish.summary if t.finish else ''}\n"
+    from rich.markup import escape
+
+    out.print(Panel(f"status: [bold]{t.finish.status if t.finish else '?'}[/] - {escape(t.finish.summary) if t.finish else ''}\n"
                     f"agent steps: {sum(1 for s in t.steps if s.actor == 'agent')}, human steps: "
                     f"{sum(1 for s in t.steps if s.actor == 'human')}, model: {t.llm.model if t.llm else '?'} "
                     f"({t.llm.calls if t.llm else 0} calls, {t.llm.input_tokens if t.llm else 0} in / {t.llm.output_tokens if t.llm else 0} out tokens)\n"
@@ -218,6 +220,7 @@ def replay(
     require_approved: bool = typer.Option(False, help="Refuse capabilities that are not approved (production mode)."),
     headed: bool = typer.Option(False),
     label: str = typer.Option(None, help="Evidence folder label."),
+    no_overrides: bool = typer.Option(False, help="Ignore the tenant's vocabulary/overrides (shows raw drift on a variant)."),
     json_out: bool = typer.Option(False, "--json", help="Print the caller-facing result as JSON."),
     reveal: bool = typer.Option(False, help="Print output values (they are never written to disk)."),
     verbose: bool = typer.Option(False, "-v"),
@@ -235,7 +238,8 @@ def replay(
         hitl = supervised or operator_script is not None
         async with _control(hitl, console_port, operator_script) as center:
             opts = ReplayOptions(supervised=supervised, require_approved=require_approved)
-            return await run_replay(capability, tenant, _kv(inputs), options=opts, control=center, headless=not headed, label=label)
+            return await run_replay(capability, tenant, _kv(inputs), options=opts, control=center, headless=not headed, label=label,
+                                    tenant_overrides=not no_overrides)
 
     res = asyncio.run(main())
     if res.evidence_dir:
@@ -293,6 +297,21 @@ def catalog(fmt: str = typer.Option("anthropic", "--format", help="anthropic | o
     from .catalog import tool_definitions
 
     print(json.dumps(tool_definitions(fmt), indent=2))
+
+
+@app.command()
+def ask(question: str = typer.Argument(..., help="A question a member-service agent would answer with a capability."),
+        llm: str = typer.Option(None, help="anthropic | openai. Default: $UNDERSTUDY_LLM.")):
+    """Let an AI agent answer a question by calling a saved capability as a tool (replay runs without the model)."""
+    from .agent.llm import make_llm
+    from .ask import ask as run
+    from .wiring import load_env
+
+    load_env()
+    res = asyncio.run(run(question, make_llm(llm)))
+    out.print(Panel(f"tool: {res.get('tool')} {json.dumps(res.get('args') or {})}\n"
+                    f"result status: {(res.get('result') or {}).get('status')}\n\n[bold]{res['answer']}[/]\n\n"
+                    f"evidence: {res['evidence']}", title="agent", border_style="cyan"))
 
 
 @app.command()
