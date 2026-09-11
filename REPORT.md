@@ -157,7 +157,7 @@ The effective view is composed at load time, and every override applied is liste
 - `approve`: the automation performs the gated step itself.
 - `reject`: the run returns the business outcome `OPERATOR_REJECTED`.
 
-**Human steps at discovery become artifact steps.** In `discovery-open_share_account` the model stopped on the review screen and a person approved *through the console UI*. Their captured click became an `origin: human`, irreversible, approval-gated step, which pauses for approval at every replay (`open-approved`). In `open-supervisor-override` a supervisor took over mid-replay; their input was captured as `[secret]`, and automation resumed on the same session.
+**Human steps at discovery become artifact steps.** In `discovery-open_share_account` the model stopped on the review screen, and the approval was given *through the console UI* by the AI coding assistant I built this with, acting as the operator. The captured click came through the operator channel, so it became an `origin: human`, irreversible, approval-gated step, which pauses for approval at every replay (`open-approved`). In `open-supervisor-override` the scripted operator, playing a supervisor, took over mid-replay; its input was captured as `[secret]`, and automation resumed on the same session.
 
 ## 6. Safety
 
