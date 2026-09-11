@@ -61,8 +61,31 @@ def _str_repr(dumper: yaml.SafeDumper, s: str) -> yaml.ScalarNode:
 _Dumper.add_representer(str, _str_repr)
 
 
+# Key order that reads top-down for a reviewer, and defaults that are noise in a reviewed file.
+_FIRST = ["schema", "id", "by", "kind", "action", "code", "version", "title", "description", "intent", "type", "status",
+          "screen", "within", "target", "locators", "value", "option", "outputs", "until", "expect", "risk", "approval", "origin"]
+_LAST = ["why", "provenance", "review"]
+_DEFAULTS = {"timeout_ms": 15000, "approval": "none", "origin": "agent", "read": "text", "required": True,
+             "retryable": False, "nth": None}
+
+
+def _tidy(x: Any, parent: str | None = None) -> Any:
+    if isinstance(x, list):
+        return [_tidy(v, parent) for v in x]
+    if not isinstance(x, dict):
+        return x
+    if parent in ("inputs", "outputs", "row", "attrs", "vocabulary", "capability_overrides", "targets", "context"):
+        return {k: _tidy(v, k) for k, v in x.items()}  # user-named keys: keep their order
+    items = {k: _tidy(v, k) for k, v in x.items() if not (k in _DEFAULTS and v == _DEFAULTS[k])}
+    first = [k for k in _FIRST if k in items]
+    last = [k for k in _LAST if k in items]
+    middle = [k for k in items if k not in first and k not in last]
+    return {k: items[k] for k in first + middle + last}
+
+
 def to_yaml(m: Model | dict, header: str | None = None) -> str:
-    body = yaml.dump(m.dump() if isinstance(m, Model) else m, Dumper=_Dumper, sort_keys=False, width=110, allow_unicode=True)
+    data = m.dump() if isinstance(m, Model) else m
+    body = yaml.dump(_tidy(data), Dumper=_Dumper, sort_keys=False, width=110, allow_unicode=True)
     return (header.rstrip() + "\n" if header else "") + body
 
 

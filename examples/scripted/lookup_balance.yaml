@@ -1,0 +1,26 @@
+# Offline stand-in for the model (no API key needed): `understudy discover lookup_balance --llm scripted:<this file>`.
+# Each step names a tool and describes its target by what the UI map shows. The script finds the ref in the
+# live observation exactly as a model reading the map would; it never touches the page directly.
+steps:
+  - tool: click
+    match: {role: button, name: Member Inquiry}
+    args: {intent: Open member inquiry from the menu, purpose: flow}
+  - tool: fill
+    match: {role: textbox, label: Member Number}
+    args: {value: "{{inputs.member_id}}", intent: Enter the member number, purpose: flow}
+  - tool: click
+    match: {role: button, name: Search}
+    args: {intent: Run the search, purpose: flow}
+  - tool: checkpoint
+    args: {description: The member detail for the requested member is open, text: "Member Detail - {{inputs.member_id}}", frame: main}
+  - tool: extract
+    match: {frame: main, follows: "Name:"}
+    args: {output: member_name, intent: Read the member name}
+  - tool: extract
+    match: {role: cell, frame: main, column: Current Balance, row: "00"}
+    args: {output: savings_balance, intent: Read the Share Savings current balance}
+  - tool: extract
+    match: {role: cell, frame: main, column: Available Balance, row: "00"}
+    args: {output: available_balance, intent: Read the Share Savings available balance}
+  - tool: finish
+    args: {status: success, summary: Read the name and both Share Savings balances}

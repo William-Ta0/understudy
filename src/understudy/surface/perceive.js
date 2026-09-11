@@ -230,11 +230,12 @@
     [/\baddress\b/i, "pii"],
     [/\b(phone|mobile)\b/i, "pii"],
     [/\be-?mail\b/i, "pii"],
-    [/^name$/i, "pii"],
+    [/^(name|member|member name|account holder|customer|borrower|joint owner)$/i, "pii"],
     [/\b(balance|amount|deposit|limit)\b/i, "financial"],
     [/\b(password|passcode|override code|pin)\b/i, "secret"],
   ];
   const SENSITIVE_PATTERNS = [
+    [/\$\s?-?[\d,]+\.\d{2}/, "financial"],
     [/\b\d{3}-\d{2}-\d{4}\b/, "pii"],
     [/[\w.+-]+@[\w-]+\.[\w.-]+/, "pii"],
     [/\(\d{3}\)\s?\d{3}-\d{4}/, "pii"],
@@ -255,10 +256,15 @@
     return "";
   }
 
+  // Label for an inline value outside a table, e.g. <p>Member: <b>DANA R WHITFIELD</b></p>.
+  function inlineLabelOf(el) {
+    return el.closest("td,th") ? "" : textBefore(el.parentElement, el);
+  }
+
   function sensitivityOf(el, role, text) {
     if (el.tagName === "INPUT" && (el.type || "").toLowerCase() === "password") return "secret";
     if (role === "columnheader" || el.tagName === "TH") return null;
-    const lab = role === "textbox" || role === "combobox" ? visualLabelOf(el) : labelForValue(el);
+    const lab = role === "textbox" || role === "combobox" ? visualLabelOf(el) : (labelForValue(el) || inlineLabelOf(el));
     // Only the value side of a label/value pair is sensitive, never the label itself.
     const isLabelCell = el.tagName === "TD" && /:\s*$/.test(textOf(el));
     if (!isLabelCell && lab) {
@@ -542,7 +548,7 @@
     const role = roleOf(el);
     const name = nameOf(el);
     const label = visualLabelOf(el);
-    const text = textOf(el).slice(0, 160);
+    const text = el.tagName === "SELECT" || el.tagName === "TEXTAREA" || (el.tagName === "INPUT" && role === "textbox") ? "" : textOf(el).slice(0, 160);
     const cands = [];
     if (role && name && role !== "cell" && role !== "columnheader") cands.push({ by: "role", role, name });
     if (label && CONTROL_TAGS.has(el.tagName) && (el.tagName === "SELECT" || el.tagName === "TEXTAREA" || role === "textbox" || role === "checkbox" || role === "radio")) {

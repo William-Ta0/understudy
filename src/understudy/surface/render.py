@@ -41,11 +41,12 @@ def render_node(n: dict, mask: set[str]) -> str:
         if "checked" in n:
             parts.append("checked" if n["checked"] else "unchecked")
         if n.get("options"):
-            opts = [o["label"] for o in n["options"]]
+            opts = [(o["label"], o.get("value", "")) for o in n["options"]]
             sel = next((o["label"] for o in n["options"] if o.get("selected")), None)
-            parts.append("options=[" + ", ".join(_q(o, 40) for o in opts[:15]) + (", …" if len(opts) > 15 else "") + "]")
+            shown = [_q(lab, 48) + (f"(={val})" if val and val != lab else "") for lab, val in opts[:15]]
+            parts.append("options=[" + ", ".join(shown) + (", …" if len(opts) > 15 else "") + "]")
             if sel is not None:
-                parts.append(f"selected={_q(sel, 40)}")
+                parts.append(f"selected={_q(sel, 48)}")
     elif role in ("button", "link"):
         parts.append(_q(name or text))
         if n.get("inferred"):
@@ -60,6 +61,9 @@ def render_node(n: dict, mask: set[str]) -> str:
     if n.get("emphasis") == "error":
         parts.append("(!error)")
     return " ".join(parts)
+
+
+_MONEY = re.compile(r"\$\s?-?[\d,]+\.\d{2}")
 
 
 def render_observation(obs: Observation, *, mask: set[str] | None = None, max_nodes: int = 260) -> str:
@@ -79,6 +83,9 @@ def render_observation(obs: Observation, *, mask: set[str] | None = None, max_no
             if budget <= 0:
                 lines.append("   … (truncated)")
                 break
-            lines.append("  " + render_node(n, mask))
+            line = render_node(n, mask)
+            if "financial" in mask:
+                line = _MONEY.sub("[financial]", line)  # amounts inside other text (option labels, messages)
+            lines.append("  " + line)
             budget -= 1
     return "\n".join(lines)

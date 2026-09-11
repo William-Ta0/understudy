@@ -1,0 +1,47 @@
+# Offline stand-in for the model for the open-share-account goal. Pair it with
+# examples/operators/approve_in_discovery.yaml so someone "human" performs the irreversible step.
+steps:
+  - tool: click
+    match: {role: button, name: Member Inquiry}
+    args: {intent: Open member inquiry, purpose: flow}
+  - tool: fill
+    match: {role: textbox, label: Member Number}
+    args: {value: "{{inputs.member_id}}", intent: Enter the member number, purpose: flow}
+  - tool: click
+    match: {role: button, name: Search}
+    args: {intent: Find the member, purpose: flow}
+  - tool: click
+    match: {role: link, name: Open Sub-Account}
+    args: {intent: Start opening a sub-account for this member, purpose: flow}
+  - tool: select_option
+    match: {role: combobox, label: Product}
+    args: {option: "{{inputs.product}}", intent: Choose the product, purpose: flow}
+  - tool: fill
+    match: {role: textbox, label: Account Nickname}
+    args: {value: "{{inputs.nickname}}", intent: Enter the nickname, purpose: flow}
+  - tool: fill
+    match: {role: textbox, label: Opening Deposit}
+    args: {value: "{{inputs.opening_deposit}}", intent: Enter the opening deposit, purpose: flow}
+  - tool: select_option
+    match: {role: combobox, label: Fund From}
+    args: {option: "{{inputs.fund_from}}", intent: Choose the funding account, purpose: flow}
+  - tool: click
+    match: {role: button, name: Continue}
+    args: {intent: Go to the review screen, purpose: flow}
+  - tool: checkpoint
+    args: {description: The review screen is showing, text: Review New Sub-Account, frame: main}
+  - tool: extract
+    match: {frame: main, follows: "Dividend Rate:"}
+    args: {output: dividend_rate, intent: Read the dividend rate}
+  - tool: request_human
+    args: {kind: approval, reason: "Opening the account is irreversible. Please review the details with the member and press Confirm & Open Account."}
+  - tool: checkpoint
+    args: {description: The account was opened, text: The sub-account was opened successfully, frame: main}
+  - tool: extract
+    match: {frame: main, follows: "Confirmation Number:"}
+    args: {output: confirmation_number, intent: Read the confirmation number}
+  - tool: extract
+    match: {frame: main, follows: "New Suffix:"}
+    args: {output: new_suffix, intent: Read the new suffix}
+  - tool: finish
+    args: {status: success, summary: Account opened by the operator; confirmation and suffix read}

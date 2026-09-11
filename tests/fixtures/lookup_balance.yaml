@@ -1,0 +1,81 @@
+# Hand-written fixture capability (same shape the compiler emits), so replay tests do not depend on a discovery run.
+schema: understudy/capability@1
+id: keystone.member.lookup_balance
+version: 1.0.0
+title: Look up a member's savings balance
+description: Test fixture.
+status: verified
+app: {product: keystone-core, profile: keystone-core@7, versions: ">=7.0,<8"}
+inputs:
+  member_id: {type: string, description: Member number, pattern: "^[0-9]{4,10}$", sensitivity: internal, example: "100234"}
+outputs:
+  member_name:
+    type: string
+    description: Member name
+    sensitivity: pii
+    source: {description: value next to Name, within: [{frame: main}], locators: [{by: label, role: cell, label: Name}]}
+  savings_balance:
+    type: money
+    description: Current balance of Share Savings
+    sensitivity: financial
+    source:
+      description: Current Balance of the Share Savings row
+      within: [{frame: main}]
+      locators: [{by: table_cell, headers: [Description, Current Balance], row: {Description: Share Savings}, column: Current Balance}]
+  available_balance:
+    type: money
+    description: Available balance of Share Savings
+    sensitivity: financial
+    source:
+      description: Available Balance of the Share Savings row
+      within: [{frame: main}]
+      locators: [{by: table_cell, headers: [Description, Available Balance], row: {Description: Share Savings}, column: Available Balance}]
+outcomes:
+  - {code: MEMBER_NOT_FOUND, description: No member with that number, condition: record_not_found}
+  - {code: MEMBER_RESTRICTED, description: Member is restricted, condition: member_restricted}
+  - {code: INVALID_MEMBER_NUMBER, description: App rejected the member number, condition: validation_error}
+entry: {screen: workstation_home}
+steps:
+  - id: click_member_inquiry
+    action: click
+    intent: Open Member Inquiry from the menu
+    screen: workstation_home
+    target:
+      description: menu item Member Inquiry
+      within: [{frame: nav}]
+      locators:
+        - {by: role, role: button, name: Member Inquiry}
+        - {by: attr, tag: td, attrs: {onclick: {value: mbrinq.asp, mode: contains}}}
+    expect: {kind: screen, screen: member_search}
+  - id: enter_member_number
+    action: fill
+    intent: Type the member number
+    screen: member_search
+    target:
+      description: textbox Member Number
+      within: [{frame: main}]
+      locators:
+        - {by: label, role: textbox, label: Member Number}
+        - {by: attr, tag: input, attrs: {name: txtMbrNo}}
+    value: "{{inputs.member_id}}"
+  - id: click_search
+    action: click
+    intent: Run the search
+    screen: member_search
+    target:
+      description: Search button
+      within: [{frame: main}]
+      locators: [{by: role, role: button, name: Search}]
+    expect: {kind: screen, screen: member_detail}
+  - id: read_balances
+    action: extract
+    intent: Read name and balances
+    screen: member_detail
+    outputs: [member_name, savings_balance, available_balance]
+success:
+  kind: all
+  of:
+    - {kind: screen, screen: member_detail}
+    - {kind: text, text: "Member Detail - {{inputs.member_id}}", within: [{frame: main}]}
+risk: reversible
+provenance: {compiled_by: hand}

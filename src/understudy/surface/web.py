@@ -61,6 +61,9 @@ class WebSurface:
         self._inflight: asyncio.Task | None = None
         self._net_inflight = 0
         self._last_net = time.monotonic()
+        self._req_seq = 0
+        self._act_seq: int | None = None
+        self._act_at = 0.0
         self._blocked: list[str] = []
         self._obs_seq = 0
         self._prefixes: dict[str, str] = {}
@@ -119,6 +122,7 @@ class WebSurface:
 
     def _on_request(self, _req: Any) -> None:
         self._net_inflight += 1
+        self._req_seq += 1
         self._last_net = time.monotonic()
 
     def _on_request_done(self, _req: Any) -> None:
@@ -203,12 +207,16 @@ class WebSurface:
 
     # ------------------------------------------------------------------ perception
 
-    async def observe(self) -> Observation:
+    async def observe(self, *, record: bool = True) -> Observation:
+        """Snapshot every frame. `record=False` (operator console) leaves the automation's view untouched."""
         self._obs_seq += 1
-        blocked, self._blocked = self._blocked, []
+        blocked = self._blocked if record else []
+        if record:
+            self._blocked = []
         if self.pending_dialog:
             obs = Observation(seq=self._obs_seq, frames=[], dialog=dict(self.dialog_info or {}), blocked=blocked)
-            self.last_observation = obs
+            if record:
+                self.last_observation = obs
             return obs
         frames: list[FrameObs] = []
         for key, fr in self.frames():
@@ -228,7 +236,8 @@ class WebSurface:
             frames.append(FrameObs(key=key, prefix=prefix, url=snap["url"], title=snap["title"], doc=snap["doc"],
                                    text=snap["text"], nodes=snap["nodes"], offset=offset))
         obs = Observation(seq=self._obs_seq, frames=frames, blocked=blocked)
-        self.last_observation = obs
+        if record:
+            self.last_observation = obs
         return obs
 
     async def text_visible(self, text: Text, within: list[Scope]) -> bool:
@@ -310,6 +319,26 @@ class WebSurface:
             d["frame"] = self._frame_key(fr)
         return d
 
+    async def describe_point(self, x: float, y: float) -> dict[str, Any] | None:
+        """Describe whatever element is under a page coordinate (coordinate fallback for the agent)."""
+        for key, fr in reversed(self.frames()):
+            ox, oy = 0.0, 0.0
+            if fr != self.page.main_frame:
+                try:
+                    bb = await (await fr.frame_element()).bounding_box()
+                except PlaywrightError:
+                    continue
+                if not bb or not (bb["x"] <= x < bb["x"] + bb["width"] and bb["y"] <= y < bb["y"] + bb["height"]):
+                    continue
+                ox, oy = bb["x"], bb["y"]
+            d = await self._eval(fr, "([x, y]) => { const el = document.elementFromPoint(x, y); "
+                                     "return el ? window.__us.describeEl(el) : null; }", [x - ox, y - oy])
+            if d:
+                d["frame"] = key
+                d["point"] = {"x": round(x - ox), "y": round(y - oy)}
+                return d
+        return None
+
     async def read_ref(self, ref: str) -> dict[str, Any] | None:
         got = await self.handle_for_ref(ref)
         if not got:
@@ -328,6 +357,7 @@ class WebSurface:
 
     async def _act(self, fn: Callable[[], Awaitable[Any]]) -> None:
         """Run an action; return early if it opens a native dialog (the action stalls until someone answers)."""
+        self._act_seq, self._act_at = self._req_seq, time.monotonic()
         task = asyncio.ensure_future(fn())
         self._inflight = task
         while True:
@@ -348,7 +378,14 @@ class WebSurface:
     async def select(self, res: Resolution, option: str) -> str:
         opts: list[list[str]] = await res.handle.evaluate("el => Array.from(el.options).map(o => [o.text.trim(), o.value])")
         want = " ".join(option.split()).lower()
-        match = next((v for t, v in opts if " ".join(t.split()).lower() == want), None)
+        norm = lambda t: " ".join(t.split()).lower()  # noqa: E731
+        # Exact visible label, then exact option value, then a unique label that starts with the text ("00 - ...").
+        match = next((v for t, v in opts if norm(t) == want), None)
+        if match is None:
+            match = next((v for t, v in opts if v.lower() == want), None)
+        if match is None:
+            pref = [v for t, v in opts if norm(t).startswith(want + " ")]
+            match = pref[0] if len(pref) == 1 else None
         if match is None:
             raise LookupError(f"no option {option!r}; available: {[t for t, _ in opts]}")
         await self._act(lambda: res.handle.select_option(value=match, timeout=5000))
@@ -398,9 +435,19 @@ class WebSurface:
 
     # ------------------------------------------------------------------ settle & screenshots
 
-    async def settle(self, timeout_ms: int = 8000, quiet_ms: int = 250) -> None:
-        """Wait until the network is quiet and every frame has finished loading, bounded by timeout."""
+    async def settle(self, timeout_ms: int = 8000, quiet_ms: int = 250, grace_ms: int = 400) -> None:
+        """Wait until the network is quiet and every frame has finished loading, bounded by timeout.
+
+        Right after an action, a navigation may not have *started* yet (a click runs a script that
+        submits a form a tick later). So first give it `grace_ms` to issue a request.
+        """
         deadline = time.monotonic() + timeout_ms / 1000
+        if self._act_seq is not None:
+            while self._req_seq == self._act_seq and (time.monotonic() - self._act_at) * 1000 < grace_ms:
+                if self.pending_dialog:
+                    return
+                await asyncio.sleep(0.02)
+            self._act_seq = None
         while time.monotonic() < deadline:
             if self.pending_dialog:
                 return

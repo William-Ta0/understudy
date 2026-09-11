@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import fnmatch
+from collections.abc import Callable
 from dataclasses import dataclass
 from urllib.parse import urlsplit
 
@@ -20,6 +21,7 @@ from ..schema import (
     UrlCondition,
 )
 from ..safety.policy import text_matches
+from ..surface.base import Observation
 from ..surface.web import DialogPending, WebSurface
 from .values import Renderer
 
@@ -36,10 +38,12 @@ def _path_query(url: str) -> str:
 
 
 class ConditionEvaluator:
-    def __init__(self, surface: WebSurface, profile: AppProfile, render: Renderer):
+    def __init__(self, surface: WebSurface, profile: AppProfile, render: Renderer,
+                 on_observe: Callable[[Observation], None] | None = None):
         self.surface = surface
         self.profile = profile
         self.render = render
+        self.on_observe = on_observe  # lets the redactor learn sensitive values from what we look at
 
     async def holds(self, c: Condition) -> bool:
         s = self.surface
@@ -128,6 +132,8 @@ class ConditionEvaluator:
             return out
         out["frames"] = {k: _path_query(f.url) for k, f in s.frames()}
         obs = await s.observe()
+        if self.on_observe:
+            self.on_observe(obs)
         errors = [n["text"] for f in obs.frames for n in f.nodes if n.get("emphasis") == "error"]
         if errors:
             out["error_text"] = errors[:3]

@@ -1,0 +1,77 @@
+# Discovery goal: a multi-field form with a review screen and an irreversible confirmation.
+# The model may take the flow to the review screen; opening the account is for a human to
+# approve and perform (policy blocks irreversible actions in discovery).
+schema: understudy/goal@1
+capability: keystone.member.open_share_account
+title: Open a share sub-account for a member
+goal: >-
+  For member {{inputs.member_id}}, open a new sub-account of product {{inputs.product}} with the account
+  nickname {{inputs.nickname}} and an opening deposit of {{inputs.opening_deposit}}, funded from the member's
+  existing account with suffix {{inputs.fund_from}}. Get to the review screen and read the dividend rate shown
+  there. Opening the account is an irreversible confirmation that a human operator must approve and perform:
+  ask for it when you are on the review screen. Once the account is open, read the confirmation number and
+  the new account suffix.
+app_profile: keystone-core@7
+entry: workstation_home
+inputs:
+  member_id:
+    type: string
+    description: Member number (4 to 10 digits)
+    pattern: "^[0-9]{4,10}$"
+    sensitivity: internal
+    example: "100234"
+  product:
+    type: enum
+    description: Share product to open
+    enum: [Share Savings, Money Market Share, Holiday Club, Share Certificate 12 Mo]
+    sensitivity: public
+    example: Money Market Share
+  nickname:
+    type: string
+    description: Account nickname shown to the member (max 20 characters)
+    pattern: "^.{1,20}$"
+    sensitivity: internal
+    example: Rainy day fund
+  opening_deposit:
+    type: money
+    description: Opening deposit amount, moved from the funding account
+    minimum: 0
+    sensitivity: financial
+  fund_from:
+    type: string
+    description: Suffix of the member's funding account, e.g. 00
+    pattern: "^[0-9]{2}$"
+    sensitivity: internal
+    example: "00"
+outputs:
+  dividend_rate:
+    type: string
+    sensitivity: public
+    description: Dividend rate of the new account as shown on the review screen
+  confirmation_number:
+    type: string
+    sensitivity: internal
+    description: Confirmation number issued when the account was opened
+  new_suffix:
+    type: string
+    sensitivity: internal
+    description: Suffix of the newly opened sub-account
+outcomes:
+  - code: MEMBER_NOT_FOUND
+    condition: record_not_found
+    description: No member has this member number.
+  - code: MEMBER_RESTRICTED
+    condition: member_restricted
+    description: The member record is restricted; no new accounts may be opened.
+  - code: PERMISSION_DENIED
+    condition: access_denied
+    description: The service account may not open sub-accounts.
+  - code: DEPOSIT_REJECTED
+    condition: validation_error
+    description: The application rejected the product, deposit, or funding account (message says why).
+  - code: ADDRESS_VERIFICATION_PENDING
+    condition: address_verification_pending
+    description: The member has an unverified address change; verify it before opening accounts.
+limits:
+  max_steps: 30
+  max_seconds: 900

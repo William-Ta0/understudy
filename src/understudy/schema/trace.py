@@ -119,5 +119,6 @@ class Trace(Model):
     steps: list[TraceStep] = Field(default_factory=list)
     interventions: list[InterventionRecord] = Field(default_factory=list)
     extracted: dict[str, dict[str, str]] = Field(default_factory=dict, description="output -> {sensitivity, fingerprint}")
+    platform: list[dict[str, Any]] = Field(default_factory=list, description="Runtime conditions the platform handled itself.")
     finish: Finish | None = None
     llm: LLMUsage | None = None

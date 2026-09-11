@@ -25,6 +25,10 @@ from .safety.redact import Redactor
 from .schema import Model
 
 
+# Process-wide listeners attached to every run (the CLI's live terminal view uses this).
+GLOBAL_LISTENERS: list[Callable[[dict[str, Any]], None]] = []
+
+
 def new_run_id(kind: str) -> str:
     return f"{kind[:3]}-{datetime.now():%Y%m%d-%H%M%S}-{secrets.token_hex(2)}"
 
@@ -46,7 +50,7 @@ class Evidence:
         self._seq = 0
         self._shots = 0
         self._t0 = time.monotonic()
-        self.listeners: list[Callable[[dict[str, Any]], None]] = []
+        self.listeners: list[Callable[[dict[str, Any]], None]] = list(GLOBAL_LISTENERS)
 
     def event(self, type_: str, actor: str = "system", **data: Any) -> dict[str, Any]:
         self._seq += 1

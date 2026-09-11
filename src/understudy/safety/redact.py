@@ -26,6 +26,7 @@ PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("card", re.compile(r"\b(?:\d[ -]?){13,19}\b")),
     ("email", re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b")),
     ("phone", re.compile(r"\(\d{3}\)\s?\d{3}-\d{4}|\b\d{3}-\d{3}-\d{4}\b")),
+    ("amount", re.compile(r"\$\s?-?[\d,]+\.\d{2}")),  # any displayed dollar amount: balances hide in option labels and messages
 ]
 
 
@@ -74,6 +75,16 @@ class Redactor:
         if k in ("public", "internal"):
             return
         self._known[v] = f"[{k}:{label}]" if label else f"[{k}]"
+
+    def learn(self, observation: Any) -> None:
+        """Register every value the page itself marked sensitive, so it is scrubbed wherever it shows up later."""
+        for f in getattr(observation, "frames", []):
+            for n in f.nodes:
+                kind = n.get("sensitive")
+                if kind in ("pii", "financial", "secret"):
+                    for v in (n.get("text"), n.get("value")):
+                        if v and len(str(v).strip()) >= 4 and not str(v).startswith("*"):
+                            self.register(v, kind)
 
     def text(self, s: str) -> str:
         if not s:

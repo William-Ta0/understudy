@@ -1,0 +1,46 @@
+# Discovery goal: a read-only lookup (search -> detail -> read a grid value).
+schema: understudy/goal@1
+capability: keystone.member.lookup_balance
+title: Look up a member's savings balance
+goal: >-
+  Look up member {{inputs.member_id}} and read the current balance and the available balance of the
+  member's primary savings account (the "Share Savings" account), and the member's name as shown on
+  the member record.
+app_profile: keystone-core@7
+entry: workstation_home
+inputs:
+  member_id:
+    type: string
+    description: Member number (4 to 10 digits)
+    pattern: "^[0-9]{4,10}$"
+    sensitivity: internal
+    example: "100234"
+outputs:
+  member_name:
+    type: string
+    sensitivity: pii
+    description: The member's name as shown on the member record
+  savings_balance:
+    type: money
+    sensitivity: financial
+    description: Current balance of the member's Share Savings account
+  available_balance:
+    type: money
+    sensitivity: financial
+    description: Available balance of the member's Share Savings account
+outcomes:
+  - code: MEMBER_NOT_FOUND
+    condition: record_not_found
+    description: No member has this member number.
+  - code: MEMBER_RESTRICTED
+    condition: member_restricted
+    description: The member record is restricted and balances are withheld. Refer the request to a supervisor.
+  - code: PERMISSION_DENIED
+    condition: access_denied
+    description: The service account is not allowed to use member inquiry.
+  - code: INVALID_MEMBER_NUMBER
+    condition: validation_error
+    description: The application rejected the member number.
+limits:
+  max_steps: 20
+  max_seconds: 600

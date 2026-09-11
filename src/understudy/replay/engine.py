@@ -77,6 +77,7 @@ class ReplayOptions:
     require_approved: bool = False  # production: refuse capabilities that are not approved
     escalation_timeout_s: float = 900
     max_restarts: int = 1
+    stop_before_irreversible: bool = False  # verification mode: prove the flow up to the commit point, never commit
 
 
 class _Outcome(Exception):
@@ -104,6 +105,11 @@ class _HumanCompleted(Exception):
     pass
 
 
+class _StopBeforeCommit(Exception):
+    def __init__(self, step_id: str):
+        self.step_id = step_id
+
+
 class ReplayEngine:
     def __init__(self, cap: Capability, profile: AppProfile, tenant: TenantBinding, guard: PolicyGuard,
                  surface: WebSurface, evidence: Evidence, redactor: Redactor, control: LiveSession | None,
@@ -119,7 +125,7 @@ class ReplayEngine:
         self.opt = options
         self.overrides = overrides or []
         self.render = Renderer(tenant={"base_url": tenant.base_url})
-        self.evaluator = ConditionEvaluator(surface, profile, self.render)
+        self.evaluator = ConditionEvaluator(surface, profile, self.render, on_observe=redactor.learn)
         self.recoverer = Recoverer(surface, guard, evidence, self.render)
         self.session = SessionManager(surface, profile, tenant, self.evaluator, self.recoverer, evidence, redactor.register)
         self.outputs: dict[str, Any] = {}
@@ -163,6 +169,10 @@ class ReplayEngine:
                     self.ev.event("flow_restarted", reason="session re-established", restart=restarts)
             await self._verify_success()
             status = RunStatus.succeeded
+        except _StopBeforeCommit as s:
+            status = RunStatus.succeeded
+            self.warnings.append(Warning(kind="verification_stop", step_id=s.step_id,
+                                         message=f"stopped before irreversible step '{s.step_id}' (verification mode); target resolved"))
         except _Outcome as o:
             status, outcome = RunStatus.business_outcome, o.outcome
         except _Fail as f:
@@ -287,6 +297,9 @@ class ReplayEngine:
         performed_by_human = False
         if decision.verdict == "block":
             raise _Fail(await self._failure(FailureCode.POLICY_BLOCKED, decision.reason, step))
+        if (decision.verdict == "approval" or step.approval == "required") and self.opt.stop_before_irreversible:
+            self.ev.event("stopped_before_irreversible", step=step.id, locator=locator)
+            raise _StopBeforeCommit(step.id)
         if decision.verdict == "approval" or step.approval == "required":
             performed_by_human = await self._approve(step)
             if not performed_by_human:
@@ -310,6 +323,7 @@ class ReplayEngine:
             detail["value"] = value
         elif isinstance(step, SelectStep):
             option = self.render(step.option)
+            option = self.tenant.vocabulary.get(option, option)  # enum values are in vendor vocabulary
             try:
                 await self.surface.select(res, option)
             except LookupError as e:
@@ -587,7 +601,8 @@ class ReplayEngine:
             if shot:
                 evidence["screenshot"] = shot
             if self.surface.pending_dialog is None:
-                obs = self.surface.last_observation or await self.surface.observe()
+                obs = await self.surface.observe()
+                self.redactor.learn(obs)
                 evidence["ui_map"] = self.ev.ui_map("failure", render_observation(obs, mask={"pii", "financial", "secret"}))
         except Exception as e:  # evidence capture must never mask the original failure
             state["evidence_error"] = str(e)[:200]

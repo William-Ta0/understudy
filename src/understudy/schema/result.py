@@ -81,7 +81,7 @@ class RecoveryRecord(Model):
 
 
 class Warning(Model):
-    kind: Literal["locator_drift", "slow_step", "override_applied", "ambiguity"]
+    kind: Literal["locator_drift", "slow_step", "override_applied", "ambiguity", "verification_stop"]
     step_id: str | None = None
     message: str
     details: dict[str, Any] = Field(default_factory=dict)

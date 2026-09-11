@@ -1,0 +1,6 @@
+# Simulated operator for replay: approves the irreversible step and lets the automation perform it.
+operator: ops.jlee
+handlers:
+  - on: approval
+    think_s: 1.5
+    release: {resolution: approve, note: Member confirmed the details on the review screen.}

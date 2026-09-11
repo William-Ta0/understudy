@@ -8,6 +8,7 @@ from .capability import (
     CheckStep,
     ClickStep,
     DialogStep,
+    DiscoveryInfo,
     Entry,
     ExtractStep,
     FillStep,
