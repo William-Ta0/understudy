@@ -1,0 +1,230 @@
+# App profile for Keystone Core 7.x (teller workstation, frameset web UI).
+#
+# Written once per vendor product, shared by every capability and every tenant running it.
+# It holds the product's runtime behaviour, not any particular task:
+#   - how to sign on (deterministic; credentials come from the tenant's secret reference)
+#   - how to recognise each screen
+#   - the catalogue of runtime conditions, each classified into the error taxonomy
+#     (business / recoverable / human_required / fatal) with the response to take
+#   - which controls commit business changes
+schema: understudy/app-profile@1
+id: keystone-core@7
+product: keystone-core
+versions: ">=7.0,<8"
+surface: web
+description: Keystone Core teller workstation. Banner/nav/main frameset, table layouts, no test ids.
+
+login:
+  url: "{{tenant.base_url}}/signon.asp"
+  steps:
+    - id: enter_user
+      action: fill
+      intent: Enter the operator user id
+      target:
+        description: textbox "User ID" on the sign-on page
+        locators:
+          - {by: label, role: textbox, label: User ID}
+          - {by: attr, tag: input, attrs: {name: uid}}
+      value: "{{secrets.username}}"
+    - id: enter_password
+      action: fill
+      intent: Enter the operator password
+      target:
+        description: password box "Password" on the sign-on page
+        locators:
+          - {by: label, role: textbox, label: Password}
+          - {by: attr, tag: input, attrs: {name: pwd}}
+      value: "{{secrets.password}}"
+    - id: sign_on
+      action: click
+      intent: Submit the sign-on form
+      target:
+        description: button "Sign On"
+        locators:
+          - {by: role, role: button, name: Sign On}
+      expect: {kind: url, pattern: "*/default.asp*"}
+  success: {kind: screen, screen: workstation_home}
+  failure: {kind: text, text: Invalid user ID or password}
+
+home: workstation_home
+
+# Screens are recognised by the main frame's route (vendor-level, identical across tenants)
+# plus a heading, because this product serves error pages and interstitials at the
+# requested URL: the route alone would say "member detail" while showing a notice.
+screens:
+  - id: signon
+    description: Sign-on page (top level, no frameset)
+    when: {kind: url, pattern: "*/signon.asp*"}
+  - id: workstation_home
+    description: Frameset loaded, welcome page in the main frame
+    when:
+      kind: all
+      of:
+        - {kind: url, pattern: "*/welcome.asp*", within: [{frame: main}]}
+        - {kind: text, text: Select a function from the menu, within: [{frame: main}]}
+  - id: member_search
+    description: Member Inquiry search form
+    when:
+      kind: all
+      of:
+        - {kind: url, pattern: "*/mbrinq.asp*", within: [{frame: main}]}
+        - {kind: text, text: Member Inquiry, within: [{frame: main}]}
+  - id: member_detail
+    description: Member Detail with member info and accounts grid
+    when:
+      kind: all
+      of:
+        - {kind: url, pattern: "*/mbrdtl.asp*", within: [{frame: main}]}
+        - {kind: text, text: Member Detail, within: [{frame: main}]}
+  - id: open_subaccount
+    description: Open Sub-Account entry form
+    when:
+      kind: all
+      of:
+        - {kind: url, pattern: "*/shareadd.asp*", within: [{frame: main}]}
+        - {kind: text, text: Open Sub-Account - Member, within: [{frame: main}]}
+  - id: supervisor_override
+    description: Supervisor override prompt for amounts over the teller limit
+    when:
+      kind: all
+      of:
+        - {kind: url, pattern: "*/ovrd.asp*", within: [{frame: main}]}
+        - {kind: text, text: Supervisor Override Required, within: [{frame: main}]}
+  - id: subaccount_review
+    description: Review screen before the account is opened
+    when:
+      kind: all
+      of:
+        - {kind: url, pattern: "*/sharerev.asp*", within: [{frame: main}]}
+        - {kind: text, text: Review New Sub-Account, within: [{frame: main}]}
+  - id: subaccount_opened
+    description: Confirmation that the sub-account was opened
+    when:
+      kind: all
+      of:
+        - {kind: url, pattern: "*/sharecnf.asp*", within: [{frame: main}]}
+        - {kind: text, text: Sub-Account Opened, within: [{frame: main}]}
+
+# Runtime conditions are checked before every step's precondition and while waiting for
+# every checkpoint, lowest priority first. First match wins.
+conditions:
+  - id: session_expired
+    kind: recoverable
+    priority: 10
+    description: The session timed out; the main frame shows the sign-on prompt (KC-SEC-0440).
+    when:
+      kind: any
+      of:
+        - {kind: text, text: session has expired, within: [{frame: main}]}
+        - {kind: screen, screen: signon}
+    recover: {do: relogin, max_attempts: 1}
+
+  - id: server_error
+    kind: fatal
+    priority: 20
+    code: APP_ERROR
+    description: Unhandled server exception (ASP.NET yellow screen).
+    when:
+      kind: any
+      of:
+        - {kind: text, text: "Server Error in '/Keystone' Application", within: [{frame: main}]}
+        - {kind: text, text: Runtime Error, within: [{frame: main}]}
+
+  - id: invalid_context
+    kind: fatal
+    priority: 20
+    code: APP_ERROR
+    description: The app rejected the request context (stale per-session token, KC-APP-0031/0044).
+    when: {kind: text, text: {value: "KC-APP-00(31|44|45)", mode: regex}, within: [{frame: main}]}
+
+  - id: host_timeout
+    kind: recoverable
+    priority: 30
+    description: Transient host communication timeout (KC-HOST-0103). The app says no changes were made; retry.
+    when: {kind: text, text: KC-HOST-0103, within: [{frame: main}]}
+    recover:
+      do: click
+      max_attempts: 2
+      backoff_ms: [750, 2000]
+      target:
+        description: the Retry control on the host error page (a link for GET, a button for POST)
+        within: [{frame: main}]
+        locators:
+          - {by: role, role: link, name: Retry}
+          - {by: role, role: button, name: Retry}
+
+  - id: system_notice
+    kind: recoverable
+    priority: 30
+    description: Maintenance notice interstitial served in place of the requested page.
+    when:
+      kind: all
+      of:
+        - {kind: text, text: System Notice, within: [{frame: main}]}
+        - {kind: text, text: Scheduled Maintenance, within: [{frame: main}]}
+    recover:
+      do: click
+      max_attempts: 3
+      target:
+        description: button "Acknowledge" on the system notice
+        within: [{frame: main}]
+        locators:
+          - {by: role, role: button, name: Acknowledge}
+
+  - id: access_denied
+    kind: business
+    priority: 40
+    code: PERMISSION_DENIED
+    description: The operator's security profile does not allow this function (KC-SEC-0217).
+    when: {kind: text, text: is not authorized for your security profile, within: [{frame: main}]}
+
+  - id: record_not_found
+    kind: business
+    priority: 40
+    code: NOT_FOUND
+    description: The search returned no records.
+    screens: [member_search]
+    when: {kind: text, text: No records match your search criteria, within: [{frame: main}]}
+
+  - id: member_restricted
+    kind: business
+    priority: 40
+    code: RESTRICTED
+    description: The member record carries a restriction (fraud alert, BSA hold); balances are withheld.
+    when: {kind: text, text: ACCOUNT RESTRICTED, within: [{frame: main}]}
+
+  - id: validation_error
+    kind: business
+    priority: 45
+    code: VALIDATION_ERROR
+    description: The app rejected an input value (red message above the form).
+    screens: [member_search, open_subaccount]
+    when:
+      kind: text
+      within: [{frame: main}]
+      text:
+        mode: regex
+        value: "(is required|must be (numeric|a dollar amount)|is below the minimum|Insufficient available funds|Select a funding account)"
+
+  - id: address_verification_pending
+    kind: business
+    priority: 40
+    code: ADDRESS_VERIFICATION_PENDING
+    description: The app asks to confirm an action on a member with an unverified address change. Not ours to decide.
+    when: {kind: dialog, message: {value: pending address change, mode: contains}}
+    recover: {do: dialog_dismiss, max_attempts: 1}
+
+  - id: supervisor_override
+    kind: human_required
+    priority: 40
+    description: Amount exceeds the teller limit; a supervisor must enter credentials at the workstation.
+    when: {kind: screen, screen: supervisor_override}
+
+# Controls that commit a business change in this product. Checked before the policy's global rules.
+risk_rules:
+  - match: {by: role, role: button, name: {value: "^Confirm & Open Account$", mode: regex}}
+    risk: irreversible
+    reason: Opens a new share account and moves the opening deposit. Cannot be undone from the workstation.
+  - match: {by: role, role: button, name: Submit Override}
+    risk: irreversible
+    reason: Records a supervisor authorisation against the transaction.

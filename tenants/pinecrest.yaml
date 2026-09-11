@@ -1,0 +1,36 @@
+# Pinecrest Federal Credit Union: same vendor product (Keystone Core 7.2), configured differently.
+#
+# Everything below is tenant configuration, not capability code. A capability recorded on
+# lakeshore runs here unchanged; these layers adapt it:
+#   vocabulary            relabels Pinecrest made in the product's label tables
+#   conditions            a mandatory bulletin Pinecrest enabled after sign-on
+#   capability_overrides  none needed so far (see the override demo in evidence/)
+schema: understudy/tenant@1
+id: pinecrest
+name: Pinecrest Federal Credit Union
+app_profile: keystone-core@7
+product_version: 7.2.6
+base_url: "${KEYSTONE_BASE_URL:-http://127.0.0.1:8765}/t/pinecrest"
+credentials: env:KEYSTONE_PINECREST
+
+vocabulary:
+  Member Inquiry: Member Lookup
+  Member Number: "Member #"
+  Current Balance: Ledger Balance
+  Share Savings: Primary Savings
+  Money Market Share: Premier Money Market
+
+conditions:
+  - id: daily_bulletin
+    kind: recoverable
+    priority: 25
+    description: Pinecrest requires operators to acknowledge a daily security bulletin before any function.
+    when: {kind: text, text: Daily Security Bulletin, within: [{frame: main}]}
+    recover:
+      do: click
+      max_attempts: 2
+      target:
+        description: button "I Have Read This Bulletin"
+        within: [{frame: main}]
+        locators:
+          - {by: role, role: button, name: I Have Read This Bulletin}

@@ -1,0 +1,42 @@
+# Default safety policy. Every actor runs under it: the model in discovery, the replay engine,
+# and (for navigation) the browser itself, which aborts any request outside the allowlist.
+schema: understudy/policy@1
+id: default
+description: Local Keystone sandbox. Discovery may never commit; replay commits only with a human approval.
+
+allowed_origins:
+  - "${KEYSTONE_BASE_URL:-http://127.0.0.1:8765}"
+allowed_paths:
+  - "/t/*/*"
+denied_paths:
+  - "/t/*/admin/*"      # user administration is out of scope for every capability
+  - "/t/*/signoff.asp"  # the session belongs to the run; only the harness ends it
+  - "/__control/*"      # the mock's fault-injection plane
+
+discovery:
+  allowed_actions: [click, fill, select, check, press, wait, extract, dialog]
+  irreversible: block
+  max_steps: 30
+  max_seconds: 900
+
+replay:
+  allowed_actions: [click, fill, select, check, press, wait, extract, dialog]
+  irreversible: require_approval
+  max_steps: 60
+  max_seconds: 300
+
+# Generic back-office commit verbs. The app profile's rules are checked first; these catch
+# controls a profile author has not classified yet. Unmatched controls default to reversible.
+risk_rules:
+  - match:
+      by: text
+      text:
+        mode: regex
+        value: "\\b(confirm|post|approve|authori[sz]e|transfer|wire|disburse|delete|void|reverse|close account|open account|pay)\\b"
+    risk: irreversible
+    reason: Label is a commit verb in banking back-office software.
+
+data:
+  mask_in_evidence: [pii, financial, secret]
+  mask_for_model: [pii, secret]
+  send_screenshots_to_model: true

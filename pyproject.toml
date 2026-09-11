@@ -1,0 +1,43 @@
+[project]
+name = "understudy"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "William-Ta0", email = "williamtao030206@outlook.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic>=1.5.0",
+    "fastapi>=0.110",
+    "httpx>=0.27",
+    "jinja2>=3.1",
+    "playwright>=1.49",
+    "pydantic>=2.7",
+    "python-dotenv>=1.0",
+    "python-multipart>=0.0.32",
+    "pyyaml>=6",
+    "rich>=13",
+    "typer>=0.12",
+    "uvicorn>=0.29",
+]
+
+[project.optional-dependencies]
+openai = [
+    "openai>=1.40",
+]
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/understudy", "src/keystone_mock"]
+
+[dependency-groups]
+dev = [
+    "mypy>=2.3.1",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.16.7",
+    "types-pyyaml>=6.0.12.20260906",
+]

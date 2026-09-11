@@ -1,0 +1,9 @@
+# Lakeshore Community Credit Union: stock Keystone Core configuration.
+# This is the tenant capabilities are discovered on (a sandbox instance with synthetic data).
+schema: understudy/tenant@1
+id: lakeshore
+name: Lakeshore Community Credit Union
+app_profile: keystone-core@7
+product_version: 7.2.4
+base_url: "${KEYSTONE_BASE_URL:-http://127.0.0.1:8765}/t/lakeshore"
+credentials: env:KEYSTONE_LAKESHORE
