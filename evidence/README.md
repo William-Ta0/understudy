@@ -30,7 +30,7 @@ The `open_share_account` discovery went like this:
 3. It called `request_human(kind=approval)`, because policy blocks irreversible actions for the model.
 4. The approval was given **through the operator console UI in a browser** by the AI coding assistant used to build this project, acting as the operator (not a person, and not the scripted operator). It took control, clicked *Confirm & Open Account* in the live view, and handed back with `completed`. This operator is recorded as `console-operator`.
 5. The agent then read the confirmation number and the new suffix.
-6. The human's click was captured, compiled into an irreversible, approval-gated `origin: human` step, and saved as [`keystone.member.open_share_account@1.0.0`](../capabilities/keystone.member.open_share_account/1.0.0.yaml).
+6. The operator's click was captured, compiled into an irreversible, approval-gated `origin: human` step, and saved as [`keystone.member.open_share_account@1.0.0`](../capabilities/keystone.member.open_share_account/1.0.0.yaml).
 
 ## Replay: deterministic, no model
 
