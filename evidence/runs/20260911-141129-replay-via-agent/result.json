@@ -1,0 +1,39 @@
+{
+  "run_id": "rep-20260911-141129-9d71",
+  "capability": {
+    "id": "keystone.member.lookup_balance",
+    "version": "1.0.0",
+    "content_hash": "sha256:bb1fca2cf4b25cf59ab689337067eb73c07c6493d6df45739ae63de55bc499a3"
+  },
+  "tenant": "lakeshore",
+  "status": "business_outcome",
+  "outcome": {
+    "code": "MEMBER_NOT_FOUND",
+    "description": "No member has this member number.",
+    "condition": "record_not_found",
+    "message": "No records match your search criteria.",
+    "step_id": "click_search",
+    "retryable": false
+  },
+  "recoveries": [],
+  "warnings": [],
+  "interventions": [],
+  "steps": [
+    {
+      "id": "click_member_inquiry",
+      "status": "done",
+      "duration_ms": 355,
+      "locator": "role=button name=\"Member Inquiry\""
+    },
+    {
+      "id": "enter_member_number",
+      "status": "done",
+      "duration_ms": 441,
+      "locator": "label=\"Member Number\" role=textbox"
+    }
+  ],
+  "started_at": "2026-09-11T06:11:29.597096Z",
+  "finished_at": "2026-09-11T06:11:31.538905Z",
+  "duration_ms": 1942,
+  "evidence_dir": "/Users/williammac/Desktop/project/understudy/evidence/runs/20260911-141129-replay-via-agent"
+}

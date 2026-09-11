@@ -1,0 +1,32 @@
+{
+  "id": "int-98a6f7",
+  "run_id": "rep-20260911-163958-1465",
+  "mode": "replay",
+  "kind": "approval",
+  "reason": "Approval needed: Human operator: click button \"Confirm & Open Account\" (asked for: Review screen for the new sub-account is displayed and verified (member {{inputs.member_id}}, {{inputs.product}}, nickname \"{{inputs.nickname}}\", opening deposit...)",
+  "context": {
+    "capability": "keystone.member.open_share_account@1.0.0",
+    "tenant": "lakeshore",
+    "step": {
+      "id": "click_confirm_open_account",
+      "intent": "Human operator: click button \"Confirm & Open Account\" (asked for: Review screen for the new sub-account is displayed and verified (member {{inputs.member_id}}, {{inputs.product}}, nickname \"{{inputs.nickname}}\", opening deposit...)",
+      "index": 10
+    },
+    "screen": "subaccount_review",
+    "frames": {
+      "top": "http://127.0.0.1:8765/t/lakeshore/default.asp",
+      "banner": "http://127.0.0.1:8765/t/lakeshore/banner.asp",
+      "nav": "http://127.0.0.1:8765/t/lakeshore/menu.asp",
+      "main": "http://127.0.0.1:8765/t/lakeshore/sharerev.asp?r=cecec4a3"
+    }
+  },
+  "screenshot": "screens/002-intervention-approval.png",
+  "console_url": "http://127.0.0.1:8766/sessions/rep-20260911-163958-1465?token=rRjCNyJRoIH1wHMg",
+  "options": [
+    "approve",
+    "reject",
+    "completed",
+    "abort"
+  ],
+  "created_at": "2026-09-11T08:40:10.505169Z"
+}

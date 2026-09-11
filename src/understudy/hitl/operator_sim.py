@@ -34,10 +34,7 @@ def _norm(s: Any) -> str:
 
 
 def _match(node: dict[str, Any], m: dict[str, Any]) -> bool:
-    for k in ("role", "name", "label", "text", "frame"):
-        if k in m and _norm(node.get(k)) != _norm(m[k]):
-            return False
-    return True
+    return all(k not in m or _norm(node.get(k)) == _norm(m[k]) for k in ("role", "name", "label", "text", "frame"))
 
 
 async def run_operator(console_base: str, token: str, script_path: str | Path, *, poll_s: float = 0.4,

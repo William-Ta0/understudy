@@ -1,0 +1,411 @@
+# compiled from discovery run dis-20260911-135207-8459
+schema: understudy/capability@1
+id: keystone.member.open_share_account
+version: 1.0.0
+title: Open a share sub-account for a member
+description: For member {{inputs.member_id}}, open a new sub-account of product {{inputs.product}} with the account
+  nickname {{inputs.nickname}} and an opening deposit of {{inputs.opening_deposit}}, funded from the member's existing
+  account with suffix {{inputs.fund_from}}. Continue to the review screen. On the review screen, first read the
+  dividend rate, then ask a human operator to approve and perform the final confirmation, which is irreversible
+  and not yours to do. When the operator hands back, read the confirmation number and the new account suffix from
+  the confirmation screen, and finish.
+status: verified
+outputs:
+  dividend_rate:
+    description: Dividend rate of the new account as shown on the review screen
+    type: string
+    sensitivity: public
+    source:
+      description: value next to the label "Dividend Rate" in the main frame
+      within:
+      - frame: main
+      locators:
+      - by: label
+        label: Dividend Rate
+        role: cell
+        why: the label printed next to the field; survives layout changes; tenant relabels go through vocabulary
+  confirmation_number:
+    description: Confirmation number issued when the account was opened
+    type: string
+    sensitivity: internal
+    source:
+      description: value next to the label "Confirmation Number" in the main frame
+      within:
+      - frame: main
+      locators:
+      - by: label
+        label: Confirmation Number
+        role: cell
+        why: the label printed next to the field; survives layout changes; tenant relabels go through vocabulary
+  new_suffix:
+    description: Suffix of the newly opened sub-account
+    type: string
+    sensitivity: internal
+    source:
+      description: value next to the label "New Suffix" in the main frame
+      within:
+      - frame: main
+      locators:
+      - by: label
+        label: New Suffix
+        role: cell
+        why: the label printed next to the field; survives layout changes; tenant relabels go through vocabulary
+risk: irreversible
+app:
+  product: keystone-core
+  profile: keystone-core@7
+  versions: '>=7.0,<8'
+inputs:
+  member_id:
+    description: Member number (4 to 10 digits)
+    type: string
+    pattern: ^[0-9]{4,10}$
+    sensitivity: internal
+    example: '100234'
+  product:
+    description: Share product to open
+    type: enum
+    enum:
+    - Share Savings
+    - Money Market Share
+    - Holiday Club
+    - Share Certificate 12 Mo
+    sensitivity: public
+    example: Money Market Share
+  nickname:
+    description: Account nickname shown to the member (max 20 characters)
+    type: string
+    pattern: ^.{1,20}$
+    sensitivity: internal
+    example: Rainy day fund
+  opening_deposit:
+    description: Opening deposit amount, moved from the funding account
+    type: money
+    minimum: '0'
+    sensitivity: financial
+  fund_from:
+    description: Suffix of the member's funding account, e.g. 00
+    type: string
+    pattern: ^[0-9]{2}$
+    sensitivity: internal
+    example: '00'
+outcomes:
+- code: MEMBER_NOT_FOUND
+  description: No member has this member number.
+  condition: record_not_found
+- code: MEMBER_RESTRICTED
+  description: The member record is restricted; no new accounts may be opened.
+  condition: member_restricted
+- code: PERMISSION_DENIED
+  description: The service account may not open sub-accounts.
+  condition: access_denied
+- code: DEPOSIT_REJECTED
+  description: The application rejected the product, deposit, or funding account (message says why).
+  condition: validation_error
+- code: ADDRESS_VERIFICATION_PENDING
+  description: The member has an unverified address change; verify it before opening accounts.
+  condition: address_verification_pending
+entry:
+  screen: workstation_home
+steps:
+- id: click_member_inquiry
+  action: click
+  intent: Open Member Inquiry to select the member first, as required by the Open Sub-Account screen
+  screen: workstation_home
+  target:
+    description: button "Member Inquiry" in the nav frame
+    within:
+    - frame: nav
+    locators:
+    - by: role
+      role: button
+      name: Member Inquiry
+      why: 'role + accessible name: what the operator reads; survives layout and generated-id changes'
+    - by: attr
+      tag: td
+      attrs:
+        onclick:
+          value: mbrinq.asp
+          mode: contains
+      why: vendor-set attribute (form field name or route); invisible to users, so tenants rarely change it
+  expect:
+    kind: screen
+    screen: member_search
+  risk: reversible
+- id: enter_member_number
+  action: fill
+  intent: Enter the member number to look up the member record
+  screen: member_search
+  target:
+    description: textbox "Member Number" in the main frame
+    within:
+    - frame: main
+    locators:
+    - by: label
+      label: Member Number
+      role: textbox
+      why: the label printed next to the field; survives layout changes; tenant relabels go through vocabulary
+    - by: attr
+      tag: input
+      attrs:
+        name: txtMbrNo
+      why: vendor-set attribute (form field name or route); invisible to users, so tenants rarely change it
+    - by: css
+      css: form[name="frmInq"] input[name="txtMbrNo"][type="TEXT"]
+      why: stable attributes only (no generated ids); last resort
+  value: '{{inputs.member_id}}'
+  risk: reversible
+- id: click_search
+  action: click
+  intent: Submit the member inquiry search to retrieve member {{inputs.member_id}}
+  screen: member_search
+  target:
+    description: button "Search" in the main frame
+    within:
+    - frame: main
+    locators:
+    - by: role
+      role: button
+      name: Search
+      why: 'role + accessible name: what the operator reads; survives layout and generated-id changes'
+    - by: css
+      css: form[name="frmInq"] input[type="BUTTON"][value="Search"]
+      why: stable attributes only (no generated ids); last resort
+  expect:
+    kind: all
+    of:
+    - kind: screen
+      screen: member_detail
+    - kind: text
+      within: []
+      text:
+        value: Member Detail - {{inputs.member_id}}
+        mode: contains
+  risk: reversible
+- id: click_open_sub_account
+  action: click
+  intent: Open the new sub-account form for this member, from the member detail screen
+  screen: member_detail
+  target:
+    description: link "Open Sub-Account" in the main frame
+    within:
+    - frame: main
+    locators:
+    - by: role
+      role: link
+      name: Open Sub-Account
+      why: 'role + accessible name: what the operator reads; survives layout and generated-id changes'
+    - by: attr
+      tag: a
+      attrs:
+        href: javascript:openSub()
+      why: vendor-set attribute (form field name or route); invisible to users, so tenants rarely change it
+  expect:
+    kind: screen
+    screen: open_subaccount
+  risk: reversible
+- id: choose_product
+  action: select
+  intent: Select the share product to open, from the declared input
+  screen: open_subaccount
+  target:
+    description: combobox "Product" in the main frame
+    within:
+    - frame: main
+    locators:
+    - by: label
+      label: Product
+      role: combobox
+      why: the label printed next to the field; survives layout changes; tenant relabels go through vocabulary
+    - by: attr
+      tag: select
+      attrs:
+        name: selProduct
+      why: vendor-set attribute (form field name or route); invisible to users, so tenants rarely change it
+    - by: css
+      css: form[name="frmOpen"] select[name="selProduct"]
+      why: stable attributes only (no generated ids); last resort
+  option: '{{inputs.product}}'
+  risk: reversible
+- id: enter_account_nickname
+  action: fill
+  intent: Enter the member-facing account nickname for the new sub-account.
+  screen: open_subaccount
+  target:
+    description: textbox "Account Nickname" in the main frame
+    within:
+    - frame: main
+    locators:
+    - by: label
+      label: Account Nickname
+      role: textbox
+      why: the label printed next to the field; survives layout changes; tenant relabels go through vocabulary
+    - by: attr
+      tag: input
+      attrs:
+        name: txtNick
+      why: vendor-set attribute (form field name or route); invisible to users, so tenants rarely change it
+    - by: css
+      css: form[name="frmOpen"] input[name="txtNick"][type="TEXT"]
+      why: stable attributes only (no generated ids); last resort
+  value: '{{inputs.nickname}}'
+  risk: reversible
+- id: enter_opening_deposit
+  action: fill
+  intent: Enter the opening deposit amount for the new sub-account
+  screen: open_subaccount
+  target:
+    description: textbox "Opening Deposit" in the main frame
+    within:
+    - frame: main
+    locators:
+    - by: label
+      label: Opening Deposit
+      role: textbox
+      why: the label printed next to the field; survives layout changes; tenant relabels go through vocabulary
+    - by: attr
+      tag: input
+      attrs:
+        name: txtDep
+      why: vendor-set attribute (form field name or route); invisible to users, so tenants rarely change it
+    - by: css
+      css: form[name="frmOpen"] input[name="txtDep"][type="TEXT"]
+      why: stable attributes only (no generated ids); last resort
+  value: '{{inputs.opening_deposit}}'
+  risk: reversible
+- id: choose_fund_from
+  action: select
+  intent: Choose the member's funding account by suffix for the opening deposit
+  screen: open_subaccount
+  target:
+    description: combobox "Fund From" in the main frame
+    within:
+    - frame: main
+    locators:
+    - by: label
+      label: Fund From
+      role: combobox
+      why: the label printed next to the field; survives layout changes; tenant relabels go through vocabulary
+    - by: attr
+      tag: select
+      attrs:
+        name: selFund
+      why: vendor-set attribute (form field name or route); invisible to users, so tenants rarely change it
+    - by: css
+      css: form[name="frmOpen"] select[name="selFund"]
+      why: stable attributes only (no generated ids); last resort
+  option: '{{inputs.fund_from}}'
+  risk: reversible
+- id: click_continue
+  action: click
+  intent: Submit the sub-account opening form to reach the review screen
+  screen: open_subaccount
+  target:
+    description: button "Continue" in the main frame
+    within:
+    - frame: main
+    locators:
+    - by: role
+      role: button
+      name: Continue
+      why: 'role + accessible name: what the operator reads; survives layout and generated-id changes'
+    - by: css
+      css: form[name="frmOpen"] input[type="SUBMIT"][value="Continue"]
+      why: stable attributes only (no generated ids); last resort
+  expect:
+    kind: screen
+    screen: subaccount_review
+  risk: reversible
+- id: read_subaccount_review
+  action: extract
+  intent: Read the declared outputs from the screen
+  screen: subaccount_review
+  outputs:
+  - dividend_rate
+  risk: read
+- id: click_confirm_open_account
+  action: click
+  intent: 'Human operator: click button "Confirm & Open Account" (asked for: Review screen for the new sub-account
+    is displayed and verified (member {{inputs.member_id}}, {{inputs.product}}, nickname "{{inputs.nickname}}",
+    opening deposit...)'
+  target:
+    description: button "Confirm & Open Account" in the main frame
+    within:
+    - frame: main
+    locators:
+    - by: role
+      role: button
+      name: Confirm & Open Account
+      why: 'role + accessible name: what the operator reads; survives layout and generated-id changes'
+    - by: css
+      css: input[name="action"][type="SUBMIT"][value="Confirm\ \&\ Open\ Account"]
+      why: stable attributes only (no generated ids); last resort
+  expect:
+    kind: all
+    of:
+    - kind: screen
+      screen: subaccount_opened
+    - kind: text
+      within:
+      - frame: main
+      text:
+        value: Sub-Account Opened
+        mode: contains
+  risk: irreversible
+  approval: required
+  origin: human
+- id: read_subaccount_opened
+  action: extract
+  intent: Read the declared outputs from the screen
+  screen: subaccount_opened
+  outputs:
+  - confirmation_number
+  - new_suffix
+  risk: read
+success:
+  kind: all
+  of:
+  - kind: screen
+    screen: subaccount_opened
+  - kind: text
+    within:
+    - frame: main
+    text:
+      value: Sub-Account Opened
+      mode: contains
+provenance:
+  discovered:
+    run_id: dis-20260911-135207-8459
+    goal: For member {{inputs.member_id}}, open a new sub-account of product {{inputs.product}} with the account
+      nickname {{inputs.nickname}} and an opening deposit of {{inputs.opening_deposit}}, funded from the member's
+      existing account with suffix {{inputs.fund_from}}. Continue to the review screen. On the review screen, first
+      read the dividend rate, then ask a human operator to approve and perform the final confirmation, which is
+      irreversible and not yours to do. When the operator hands back, read the confirmation number and the new account
+      suffix from the confirmation screen, and finish.
+    model: glm-5.3
+    tenant: lakeshore
+    product_version: 7.2.4
+    at: '2026-09-11T05:52:08.202405Z'
+    agent_steps: 15
+    human_steps: 1
+    llm_calls: 17
+  compiled_by: understudy 0.1.0
+  trace_digest: sha256:0a9571691fdb83241dd2bd63968994e041a418da745d466573f688f6ab253333
+  verifications:
+  - status: succeeded
+    run_id: rep-20260911-135930-3d64
+    at: '2026-09-11T05:59:35.383134Z'
+    tenant: lakeshore
+    duration_ms: 4398
+review:
+  notes:
+  - level: info
+    message: 'dropped detour step 0 (''Open the Open Sub-Account function from the nav menu''): it led to an unrecognised
+      screen, and the next action replaced that frame''s content without using it'
+  - level: info
+    step: click_confirm_open_account
+    message: performed by a human operator at discovery
+  - level: info
+    step: click_confirm_open_account
+    message: 'irreversible: replay pauses for a human approval before this step'
+  approvals: []

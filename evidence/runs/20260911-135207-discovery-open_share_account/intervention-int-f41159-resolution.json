@@ -1,0 +1,63 @@
+{
+  "request_id": "int-f41159",
+  "operator": "console-operator",
+  "resolution": "completed",
+  "note": "Reviewed the details on the review screen; pressed Confirm & Open Account in the live session.",
+  "claimed_at": "2026-09-11T05:55:57.043486Z",
+  "released_at": "2026-09-11T05:58:51.255358Z",
+  "human_actions": [
+    {
+      "at": "2026-09-11T05:57:36.768831Z",
+      "kind": "click",
+      "frame": "main",
+      "target": {
+        "role": "button",
+        "name": "Confirm & Open Account",
+        "label": "Confirm & Open Account",
+        "tag": "input",
+        "candidates": [
+          {
+            "locator": {
+              "by": "role",
+              "role": "button",
+              "name": "Confirm & Open Account"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "attr",
+              "tag": "input",
+              "attrs": {
+                "name": "action"
+              }
+            },
+            "matches": 3,
+            "unique": false,
+            "same": false
+          },
+          {
+            "locator": {
+              "by": "css",
+              "css": "input[name=\"action\"][type=\"SUBMIT\"][value=\"Confirm\\ \\&\\ Open\\ Account\"]"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "xpath",
+              "xpath": "/html/body/form/input[1]"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          }
+        ]
+      }
+    }
+  ]
+}

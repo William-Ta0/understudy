@@ -1,0 +1,17 @@
+== frame "banner" · /t/lakeshore/banner.asp · ""
+  [b1] cell "Lakeshore Community Credit Union Keystone Core 7.2 · Teller Workstation"
+  [b2] text "Lakeshore Community Credit Union"
+  [b3] text "Keystone Core 7.2 · Teller Workstation"
+  [b4] link "Sign Off"
+== frame "nav" · /t/lakeshore/menu.asp · ""
+  [n2] cell "Functions"
+  [n3] button "Member Inquiry" (clickable <td>)
+  [n4] button "Open Sub-Account" (clickable <td>)
+  [n5] button "Teller Transactions" (clickable <td>)
+  [n6] button "Reports" (clickable <td>)
+  [n7] button "Administration" (clickable <td>)
+== frame "main" · /t/lakeshore/mbrdtl.asp?m=100234&_k=… · "Runtime Error"
+  [m1] heading "Server Error in '/Keystone' Application."
+  [m2] text "An application error occurred on the server. The current custom error settings for this application prevent the details…"
+  [m3] text "Description:"
+  [m4] text "Exception Details:"

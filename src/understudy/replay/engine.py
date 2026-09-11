@@ -26,13 +26,13 @@ import asyncio
 import time
 import traceback
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from ..evidence import Evidence
 from ..hitl.control import LiveSession
 from ..runtime.conditions import ConditionEvaluator, Detection
-from ..runtime.recovery import RecoveryExhausted, Recoverer
+from ..runtime.recovery import Recoverer, RecoveryExhausted
 from ..runtime.session import LoginError, SessionManager
 from ..runtime.values import InputError, Renderer, parse_output, validate_inputs
 from ..safety.policy import PolicyGuard
@@ -139,7 +139,7 @@ class ReplayEngine:
     # ------------------------------------------------------------------ entry point
 
     async def run(self, raw_inputs: dict[str, Any]) -> RunResult:
-        started = datetime.now(timezone.utc)
+        started = datetime.now(UTC)
         t0 = time.monotonic()
         cap = self.cap
         status, outcome, failure = RunStatus.failed, None, None
@@ -165,7 +165,7 @@ class ReplayEngine:
                 except _Restart:
                     restarts += 1
                     if restarts > self.opt.max_restarts:
-                        raise _Fail(Failure(code=FailureCode.RECOVERY_EXHAUSTED, message="session kept expiring", retryable=True))
+                        raise _Fail(Failure(code=FailureCode.RECOVERY_EXHAUSTED, message="session kept expiring", retryable=True)) from None
                     self.ev.event("flow_restarted", reason="session re-established", restart=restarts)
             await self._verify_success()
             status = RunStatus.succeeded
@@ -180,7 +180,7 @@ class ReplayEngine:
         except Exception as e:  # engine bug or infrastructure fault: still a structured, debuggable result
             failure = Failure(code=FailureCode.INTERNAL_ERROR, message=f"{type(e).__name__}: {e}",
                               details={"traceback": traceback.format_exc()[-2000:]})
-        finished = datetime.now(timezone.utc)
+        finished = datetime.now(UTC)
         if failure is not None:
             failure = failure.model_copy(update={"retryable": failure.retryable or failure.code in RETRYABLE})
         result = RunResult(
@@ -626,4 +626,4 @@ def _abort_code(res: InterventionResolution) -> FailureCode:
 def _record(cond: str, step: str | None, action: str, attempt: int):
     from ..schema import RecoveryRecord
 
-    return RecoveryRecord(condition=cond, step_id=step, action=action, attempt=attempt, at=datetime.now(timezone.utc))
+    return RecoveryRecord(condition=cond, step_id=step, action=action, attempt=attempt, at=datetime.now(UTC))

@@ -17,13 +17,12 @@ import json
 import secrets
 import time
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from .safety.redact import Redactor
 from .schema import Model
-
 
 # Process-wide listeners attached to every run (the CLI's live terminal view uses this).
 GLOBAL_LISTENERS: list[Callable[[dict[str, Any]], None]] = []
@@ -46,7 +45,7 @@ class Evidence:
             n += 1
         (self.dir / "screens").mkdir(parents=True)
         (self.dir / "ui").mkdir()
-        self._log = open(self.dir / "events.jsonl", "a", encoding="utf-8")
+        self._log = open(self.dir / "events.jsonl", "a", encoding="utf-8")  # noqa: SIM115 - held for the run, closed in close()
         self._seq = 0
         self._shots = 0
         self._t0 = time.monotonic()
@@ -56,7 +55,7 @@ class Evidence:
         self._seq += 1
         rec = {
             "seq": self._seq,
-            "ts": datetime.now(timezone.utc).isoformat(timespec="milliseconds"),
+            "ts": datetime.now(UTC).isoformat(timespec="milliseconds"),
             "t": round(time.monotonic() - self._t0, 3),
             "run_id": self.run_id,
             "actor": actor,

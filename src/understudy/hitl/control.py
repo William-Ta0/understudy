@@ -23,7 +23,7 @@ from __future__ import annotations
 import asyncio
 import secrets
 from collections.abc import Awaitable, Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any, Literal, Protocol
 
@@ -49,7 +49,7 @@ class InterventionRouter(Protocol):
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class LiveSession:
@@ -104,6 +104,7 @@ class LiveSession:
             created_at=_now(),
         )
         self.request = req
+        self._actions = []  # each intervention records only what happened during it
         self._transfer(Holder.paused, reason=f"escalated: {kind}")
         loop = asyncio.get_running_loop()
         self._resolution = loop.create_future()
@@ -114,7 +115,7 @@ class LiveSession:
         self.center.router.route(req, self)
         try:
             res = await asyncio.wait_for(asyncio.shield(self._resolution), timeout=timeout_s)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             res = self._finish(operator="system", resolution="abort", note=f"no operator resolved the request within {timeout_s:.0f}s")
             res = res.model_copy(update={"note": "ESCALATION_TIMEOUT"})
         self.request = None
@@ -176,6 +177,7 @@ class LiveSession:
         self.last_resolution = res
         self.operator = None
         self._claimed_at = None
+        self._actions = []
         self._transfer(Holder.automation, reason=f"released: {resolution}", resolution=resolution, note=note,
                        human_actions=len(res.human_actions))
         self.evidence.write_json(f"intervention-{res.request_id}-resolution.json", res)

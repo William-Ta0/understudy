@@ -12,8 +12,8 @@ OPEN_ARGS=(-i member_id=104410 -i "product=Money Market Share" -i "nickname=Rain
 step() { printf '\n\033[1m== %s\033[0m\n' "$*"; }
 reset() { $U fault reset >/dev/null; }
 
-step "1. lookup: success on the tenant it was discovered on"
-reset; $U replay $LOOKUP -t lakeshore -i member_id=100234 --label lookup-success
+step "1. lookup: success on the tenant it was discovered on (production mode: approved capabilities only)"
+reset; $U replay $LOOKUP -t lakeshore -i member_id=100234 --require-approved --label lookup-success
 
 step "2. lookup: business outcome - no such member"
 reset; $U replay $LOOKUP -t lakeshore -i member_id=999999 --label lookup-not-found

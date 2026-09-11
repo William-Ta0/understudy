@@ -1,0 +1,1221 @@
+{
+  "$defs": {
+    "AllCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "all",
+          "default": "all",
+          "title": "Kind",
+          "type": "string"
+        },
+        "of": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "all": "#/$defs/AllCondition",
+                "any": "#/$defs/AnyCondition",
+                "dialog": "#/$defs/DialogCondition",
+                "element": "#/$defs/ElementCondition",
+                "not": "#/$defs/NotCondition",
+                "screen": "#/$defs/ScreenCondition",
+                "text": "#/$defs/TextCondition",
+                "url": "#/$defs/UrlCondition"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TextCondition"
+              },
+              {
+                "$ref": "#/$defs/ElementCondition"
+              },
+              {
+                "$ref": "#/$defs/UrlCondition"
+              },
+              {
+                "$ref": "#/$defs/DialogCondition"
+              },
+              {
+                "$ref": "#/$defs/ScreenCondition"
+              },
+              {
+                "$ref": "#/$defs/AllCondition"
+              },
+              {
+                "$ref": "#/$defs/AnyCondition"
+              },
+              {
+                "$ref": "#/$defs/NotCondition"
+              }
+            ]
+          },
+          "title": "Of",
+          "type": "array"
+        }
+      },
+      "required": [
+        "of"
+      ],
+      "title": "AllCondition",
+      "type": "object"
+    },
+    "AnyCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "any",
+          "default": "any",
+          "title": "Kind",
+          "type": "string"
+        },
+        "of": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "all": "#/$defs/AllCondition",
+                "any": "#/$defs/AnyCondition",
+                "dialog": "#/$defs/DialogCondition",
+                "element": "#/$defs/ElementCondition",
+                "not": "#/$defs/NotCondition",
+                "screen": "#/$defs/ScreenCondition",
+                "text": "#/$defs/TextCondition",
+                "url": "#/$defs/UrlCondition"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TextCondition"
+              },
+              {
+                "$ref": "#/$defs/ElementCondition"
+              },
+              {
+                "$ref": "#/$defs/UrlCondition"
+              },
+              {
+                "$ref": "#/$defs/DialogCondition"
+              },
+              {
+                "$ref": "#/$defs/ScreenCondition"
+              },
+              {
+                "$ref": "#/$defs/AllCondition"
+              },
+              {
+                "$ref": "#/$defs/AnyCondition"
+              },
+              {
+                "$ref": "#/$defs/NotCondition"
+              }
+            ]
+          },
+          "title": "Of",
+          "type": "array"
+        }
+      },
+      "required": [
+        "of"
+      ],
+      "title": "AnyCondition",
+      "type": "object"
+    },
+    "AttrLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "nth": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "0-based pick among multiple matches. Discouraged; flagged in review.",
+          "title": "Nth"
+        },
+        "why": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Why this locator is expected to be stable (written by the compiler).",
+          "title": "Why"
+        },
+        "by": {
+          "const": "attr",
+          "default": "attr",
+          "title": "By",
+          "type": "string"
+        },
+        "tag": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tag"
+        },
+        "attrs": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/TextMatch"
+              }
+            ]
+          },
+          "title": "Attrs",
+          "type": "object"
+        }
+      },
+      "required": [
+        "attrs"
+      ],
+      "title": "AttrLocator",
+      "type": "object"
+    },
+    "CapabilityOverride": {
+      "additionalProperties": false,
+      "properties": {
+        "targets": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Target"
+          },
+          "description": "Key is a step id, or 'output:<name>' for an output source.",
+          "title": "Targets",
+          "type": "object"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason"
+      ],
+      "title": "CapabilityOverride",
+      "type": "object"
+    },
+    "ConditionKind": {
+      "description": "The error taxonomy. Every runtime condition the replay engine can detect falls in one class.\n\nbusiness        a legitimate answer the caller must handle (\"no such member\"). Not a failure.\nrecoverable     an incidental interruption the engine handles itself (interstitial, transient\n                host error, session expiry), within a bounded number of attempts.\nhuman_required  only a person can resolve it (supervisor override, MFA, ambiguous record).\n                The engine escalates and waits on the same live session.\nfatal           the app is broken or in an unknown state. Stop and surface a debuggable failure.",
+      "enum": [
+        "business",
+        "recoverable",
+        "human_required",
+        "fatal"
+      ],
+      "title": "ConditionKind",
+      "type": "string"
+    },
+    "CssLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "nth": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "0-based pick among multiple matches. Discouraged; flagged in review.",
+          "title": "Nth"
+        },
+        "why": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Why this locator is expected to be stable (written by the compiler).",
+          "title": "Why"
+        },
+        "by": {
+          "const": "css",
+          "default": "css",
+          "title": "By",
+          "type": "string"
+        },
+        "css": {
+          "title": "Css",
+          "type": "string"
+        }
+      },
+      "required": [
+        "css"
+      ],
+      "title": "CssLocator",
+      "type": "object"
+    },
+    "DialogCondition": {
+      "additionalProperties": false,
+      "description": "A native dialog (alert/confirm/prompt) is open, optionally with a matching message.",
+      "properties": {
+        "kind": {
+          "const": "dialog",
+          "default": "dialog",
+          "title": "Kind",
+          "type": "string"
+        },
+        "message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/TextMatch"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Message"
+        }
+      },
+      "title": "DialogCondition",
+      "type": "object"
+    },
+    "ElementCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "element",
+          "default": "element",
+          "title": "Kind",
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/$defs/Target"
+        },
+        "state": {
+          "default": "visible",
+          "enum": [
+            "visible",
+            "absent"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "target"
+      ],
+      "title": "ElementCondition",
+      "type": "object"
+    },
+    "LabelLocator": {
+      "additionalProperties": false,
+      "description": "A control found by the label text a human reads next to it (or a value cell by its row label).",
+      "properties": {
+        "nth": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "0-based pick among multiple matches. Discouraged; flagged in review.",
+          "title": "Nth"
+        },
+        "why": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Why this locator is expected to be stable (written by the compiler).",
+          "title": "Why"
+        },
+        "by": {
+          "const": "label",
+          "default": "label",
+          "title": "By",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/TextMatch"
+            }
+          ],
+          "title": "Label"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Role"
+        }
+      },
+      "required": [
+        "label"
+      ],
+      "title": "LabelLocator",
+      "type": "object"
+    },
+    "NotCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "not",
+          "default": "not",
+          "title": "Kind",
+          "type": "string"
+        },
+        "of": {
+          "discriminator": {
+            "mapping": {
+              "all": "#/$defs/AllCondition",
+              "any": "#/$defs/AnyCondition",
+              "dialog": "#/$defs/DialogCondition",
+              "element": "#/$defs/ElementCondition",
+              "not": "#/$defs/NotCondition",
+              "screen": "#/$defs/ScreenCondition",
+              "text": "#/$defs/TextCondition",
+              "url": "#/$defs/UrlCondition"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/TextCondition"
+            },
+            {
+              "$ref": "#/$defs/ElementCondition"
+            },
+            {
+              "$ref": "#/$defs/UrlCondition"
+            },
+            {
+              "$ref": "#/$defs/DialogCondition"
+            },
+            {
+              "$ref": "#/$defs/ScreenCondition"
+            },
+            {
+              "$ref": "#/$defs/AllCondition"
+            },
+            {
+              "$ref": "#/$defs/AnyCondition"
+            },
+            {
+              "$ref": "#/$defs/NotCondition"
+            }
+          ],
+          "title": "Of"
+        }
+      },
+      "required": [
+        "of"
+      ],
+      "title": "NotCondition",
+      "type": "object"
+    },
+    "PointLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "nth": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "0-based pick among multiple matches. Discouraged; flagged in review.",
+          "title": "Nth"
+        },
+        "why": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Why this locator is expected to be stable (written by the compiler).",
+          "title": "Why"
+        },
+        "by": {
+          "const": "point",
+          "default": "point",
+          "title": "By",
+          "type": "string"
+        },
+        "x": {
+          "title": "X",
+          "type": "integer"
+        },
+        "y": {
+          "title": "Y",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "title": "PointLocator",
+      "type": "object"
+    },
+    "Recovery": {
+      "additionalProperties": false,
+      "properties": {
+        "do": {
+          "enum": [
+            "click",
+            "dialog_accept",
+            "dialog_dismiss",
+            "wait",
+            "reload",
+            "relogin"
+          ],
+          "title": "Do",
+          "type": "string"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Target"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "max_attempts": {
+          "default": 2,
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Max Attempts",
+          "type": "integer"
+        },
+        "backoff_ms": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Backoff Ms",
+          "type": "array"
+        }
+      },
+      "required": [
+        "do"
+      ],
+      "title": "Recovery",
+      "type": "object"
+    },
+    "RoleLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "nth": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "0-based pick among multiple matches. Discouraged; flagged in review.",
+          "title": "Nth"
+        },
+        "why": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Why this locator is expected to be stable (written by the compiler).",
+          "title": "Why"
+        },
+        "by": {
+          "const": "role",
+          "default": "role",
+          "title": "By",
+          "type": "string"
+        },
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/TextMatch"
+            }
+          ],
+          "title": "Name"
+        }
+      },
+      "required": [
+        "role",
+        "name"
+      ],
+      "title": "RoleLocator",
+      "type": "object"
+    },
+    "RuntimeCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ConditionKind"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "discriminator": {
+            "mapping": {
+              "all": "#/$defs/AllCondition",
+              "any": "#/$defs/AnyCondition",
+              "dialog": "#/$defs/DialogCondition",
+              "element": "#/$defs/ElementCondition",
+              "not": "#/$defs/NotCondition",
+              "screen": "#/$defs/ScreenCondition",
+              "text": "#/$defs/TextCondition",
+              "url": "#/$defs/UrlCondition"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/TextCondition"
+            },
+            {
+              "$ref": "#/$defs/ElementCondition"
+            },
+            {
+              "$ref": "#/$defs/UrlCondition"
+            },
+            {
+              "$ref": "#/$defs/DialogCondition"
+            },
+            {
+              "$ref": "#/$defs/ScreenCondition"
+            },
+            {
+              "$ref": "#/$defs/AllCondition"
+            },
+            {
+              "$ref": "#/$defs/AnyCondition"
+            },
+            {
+              "$ref": "#/$defs/NotCondition"
+            }
+          ],
+          "title": "When"
+        },
+        "code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Code surfaced to the caller for business/fatal conditions.",
+          "title": "Code"
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Target"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Element whose text is captured as the message."
+        },
+        "recover": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Recovery"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "screens": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Only evaluated on these screens (None: everywhere).",
+          "title": "Screens"
+        },
+        "priority": {
+          "default": 50,
+          "description": "Lower is checked first. Session and fatal checks go first.",
+          "title": "Priority",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "description",
+        "when"
+      ],
+      "title": "RuntimeCondition",
+      "type": "object"
+    },
+    "Scope": {
+      "additionalProperties": false,
+      "description": "One level of container path, outermost first. Exactly one field is set.\n\nframe   a frame/iframe, by its `name` attribute (web). Vendor-level, so stable across tenants.\ndialog  an in-page modal by (partial) title; \"\" means any open dialog.\nwindow  a top-level window by title (desktop surfaces; not implemented for web).",
+      "properties": {
+        "frame": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Frame"
+        },
+        "dialog": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dialog"
+        },
+        "window": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Window"
+        }
+      },
+      "title": "Scope",
+      "type": "object"
+    },
+    "ScreenCondition": {
+      "additionalProperties": false,
+      "description": "The surface is showing a screen defined in the app profile.",
+      "properties": {
+        "kind": {
+          "const": "screen",
+          "default": "screen",
+          "title": "Kind",
+          "type": "string"
+        },
+        "screen": {
+          "title": "Screen",
+          "type": "string"
+        }
+      },
+      "required": [
+        "screen"
+      ],
+      "title": "ScreenCondition",
+      "type": "object"
+    },
+    "ScreenDef": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "discriminator": {
+            "mapping": {
+              "all": "#/$defs/AllCondition",
+              "any": "#/$defs/AnyCondition",
+              "dialog": "#/$defs/DialogCondition",
+              "element": "#/$defs/ElementCondition",
+              "not": "#/$defs/NotCondition",
+              "screen": "#/$defs/ScreenCondition",
+              "text": "#/$defs/TextCondition",
+              "url": "#/$defs/UrlCondition"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/TextCondition"
+            },
+            {
+              "$ref": "#/$defs/ElementCondition"
+            },
+            {
+              "$ref": "#/$defs/UrlCondition"
+            },
+            {
+              "$ref": "#/$defs/DialogCondition"
+            },
+            {
+              "$ref": "#/$defs/ScreenCondition"
+            },
+            {
+              "$ref": "#/$defs/AllCondition"
+            },
+            {
+              "$ref": "#/$defs/AnyCondition"
+            },
+            {
+              "$ref": "#/$defs/NotCondition"
+            }
+          ],
+          "title": "When"
+        }
+      },
+      "required": [
+        "id",
+        "description",
+        "when"
+      ],
+      "title": "ScreenDef",
+      "type": "object"
+    },
+    "TableCellLocator": {
+      "additionalProperties": false,
+      "description": "A data cell: the table is identified by its header texts, the row by key column values.",
+      "properties": {
+        "nth": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "0-based pick among multiple matches. Discouraged; flagged in review.",
+          "title": "Nth"
+        },
+        "why": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Why this locator is expected to be stable (written by the compiler).",
+          "title": "Why"
+        },
+        "by": {
+          "const": "table_cell",
+          "default": "table_cell",
+          "title": "By",
+          "type": "string"
+        },
+        "headers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Headers",
+          "type": "array"
+        },
+        "row": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/TextMatch"
+              }
+            ]
+          },
+          "title": "Row",
+          "type": "object"
+        },
+        "column": {
+          "title": "Column",
+          "type": "string"
+        }
+      },
+      "required": [
+        "headers",
+        "row",
+        "column"
+      ],
+      "title": "TableCellLocator",
+      "type": "object"
+    },
+    "Target": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "description": "Human-readable description, e.g. 'textbox \"Member Number\" in main frame'.",
+          "title": "Description",
+          "type": "string"
+        },
+        "within": {
+          "items": {
+            "$ref": "#/$defs/Scope"
+          },
+          "title": "Within",
+          "type": "array"
+        },
+        "locators": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "attr": "#/$defs/AttrLocator",
+                "css": "#/$defs/CssLocator",
+                "label": "#/$defs/LabelLocator",
+                "point": "#/$defs/PointLocator",
+                "role": "#/$defs/RoleLocator",
+                "table_cell": "#/$defs/TableCellLocator",
+                "text": "#/$defs/TextLocator"
+              },
+              "propertyName": "by"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/RoleLocator"
+              },
+              {
+                "$ref": "#/$defs/LabelLocator"
+              },
+              {
+                "$ref": "#/$defs/TextLocator"
+              },
+              {
+                "$ref": "#/$defs/TableCellLocator"
+              },
+              {
+                "$ref": "#/$defs/AttrLocator"
+              },
+              {
+                "$ref": "#/$defs/CssLocator"
+              },
+              {
+                "$ref": "#/$defs/PointLocator"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Locators",
+          "type": "array"
+        }
+      },
+      "required": [
+        "description",
+        "locators"
+      ],
+      "title": "Target",
+      "type": "object"
+    },
+    "TextCondition": {
+      "additionalProperties": false,
+      "description": "Visible text is present in the scope. A bare string matches as `contains`.",
+      "properties": {
+        "kind": {
+          "const": "text",
+          "default": "text",
+          "title": "Kind",
+          "type": "string"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/TextMatch"
+            }
+          ],
+          "title": "Text"
+        },
+        "within": {
+          "items": {
+            "$ref": "#/$defs/Scope"
+          },
+          "title": "Within",
+          "type": "array"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "TextCondition",
+      "type": "object"
+    },
+    "TextLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "nth": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "0-based pick among multiple matches. Discouraged; flagged in review.",
+          "title": "Nth"
+        },
+        "why": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Why this locator is expected to be stable (written by the compiler).",
+          "title": "Why"
+        },
+        "by": {
+          "const": "text",
+          "default": "text",
+          "title": "By",
+          "type": "string"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/TextMatch"
+            }
+          ],
+          "title": "Text"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Role"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "TextLocator",
+      "type": "object"
+    },
+    "TextMatch": {
+      "additionalProperties": false,
+      "description": "A text predicate. Comparison is always whitespace- and case-insensitive.\n\n`value` may contain templates such as `{{inputs.member_id}}`; they are rendered before matching.\nA bare string in YAML means `mode: exact` for locators and `mode: contains` for text conditions.",
+      "properties": {
+        "value": {
+          "title": "Value",
+          "type": "string"
+        },
+        "mode": {
+          "default": "exact",
+          "enum": [
+            "exact",
+            "contains",
+            "regex"
+          ],
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "title": "TextMatch",
+      "type": "object"
+    },
+    "UrlCondition": {
+      "additionalProperties": false,
+      "description": "The scoped frame's URL (path + query) matches a glob. Templates like {{inputs.x}} are allowed.",
+      "properties": {
+        "kind": {
+          "const": "url",
+          "default": "url",
+          "title": "Kind",
+          "type": "string"
+        },
+        "pattern": {
+          "title": "Pattern",
+          "type": "string"
+        },
+        "within": {
+          "items": {
+            "$ref": "#/$defs/Scope"
+          },
+          "title": "Within",
+          "type": "array"
+        }
+      },
+      "required": [
+        "pattern"
+      ],
+      "title": "UrlCondition",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "understudy/tenant@1",
+      "default": "understudy/tenant@1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "app_profile": {
+      "title": "App Profile",
+      "type": "string"
+    },
+    "product_version": {
+      "title": "Product Version",
+      "type": "string"
+    },
+    "base_url": {
+      "title": "Base Url",
+      "type": "string"
+    },
+    "credentials": {
+      "description": "Reference only, e.g. 'env:KEYSTONE_LAKESHORE'. Never an inline secret.",
+      "title": "Credentials",
+      "type": "string"
+    },
+    "vocabulary": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Vocabulary",
+      "type": "object"
+    },
+    "conditions": {
+      "items": {
+        "$ref": "#/$defs/RuntimeCondition"
+      },
+      "title": "Conditions",
+      "type": "array"
+    },
+    "screens": {
+      "items": {
+        "$ref": "#/$defs/ScreenDef"
+      },
+      "title": "Screens",
+      "type": "array"
+    },
+    "capability_overrides": {
+      "additionalProperties": {
+        "$ref": "#/$defs/CapabilityOverride"
+      },
+      "title": "Capability Overrides",
+      "type": "object"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "app_profile",
+    "product_version",
+    "base_url",
+    "credentials"
+  ],
+  "title": "TenantBinding",
+  "type": "object"
+}

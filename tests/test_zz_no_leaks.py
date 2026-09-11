@@ -17,7 +17,8 @@ ROOT = Path(__file__).resolve().parent.parent
 def _needles() -> set[str]:
     out: set[str] = set()
     for m in SEED_MEMBERS.values():
-        out |= {m.display_name, f"{m.first} {m.middle} {m.last}", m.ssn, m.dob, m.address, m.phone, m.email}
+        out |= {m.display_name, f"{m.first} {m.middle} {m.last}", f"{m.first} {m.middle}. {m.last}", f"{m.first} {m.last}",
+                m.ssn, m.dob, m.address, m.phone, m.email}
         for a in m.accounts:
             if a.current > 100:
                 out |= {money(a.current), money(a.available)}
@@ -38,6 +39,6 @@ def test_no_synthetic_pii_or_secrets_on_disk(tmp_path_factory):
     needles = _needles()
     leaks = []
     for f in _files(tmp_path_factory.getbasetemp()):
-        text = f.read_text(errors="ignore")
-        leaks += [(str(f.relative_to(f.anchor)), n) for n in needles if n in text]
+        text = f.read_text(errors="ignore").lower()
+        leaks += [(str(f.relative_to(f.anchor)), n) for n in needles if n.lower() in text]
     assert not leaks, f"sensitive values found on disk: {leaks[:10]}"

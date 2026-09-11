@@ -1,0 +1,490 @@
+{
+  "run_id": "dis-20260911-134955-aba7",
+  "goal": {
+    "schema": "understudy/goal@1",
+    "capability": "keystone.member.lookup_balance",
+    "title": "Look up a member's savings balance",
+    "goal": "Look up member {{inputs.member_id}} and read the current balance and the available balance of the member's primary savings account (the \"Share Savings\" account), and the member's name as shown on the member record.",
+    "app_profile": "keystone-core@7",
+    "entry": "workstation_home",
+    "inputs": {
+      "member_id": {
+        "type": "string",
+        "description": "Member number (4 to 10 digits)",
+        "required": true,
+        "pattern": "^[0-9]{4,10}$",
+        "sensitivity": "internal",
+        "example": "100234"
+      }
+    },
+    "outputs": {
+      "member_name": {
+        "type": "string",
+        "description": "The member's name as shown on the member record",
+        "sensitivity": "pii"
+      },
+      "savings_balance": {
+        "type": "money",
+        "description": "Current balance of the member's Share Savings account",
+        "sensitivity": "financial"
+      },
+      "available_balance": {
+        "type": "money",
+        "description": "Available balance of the member's Share Savings account",
+        "sensitivity": "financial"
+      }
+    },
+    "outcomes": [
+      {
+        "code": "MEMBER_NOT_FOUND",
+        "description": "No member has this member number.",
+        "condition": "record_not_found",
+        "retryable": false
+      },
+      {
+        "code": "MEMBER_RESTRICTED",
+        "description": "The member record is restricted and balances are withheld. Refer the request to a supervisor.",
+        "condition": "member_restricted",
+        "retryable": false
+      },
+      {
+        "code": "PERMISSION_DENIED",
+        "description": "The service account is not allowed to use member inquiry.",
+        "condition": "access_denied",
+        "retryable": false
+      },
+      {
+        "code": "INVALID_MEMBER_NUMBER",
+        "description": "The application rejected the member number.",
+        "condition": "validation_error",
+        "retryable": false
+      }
+    ],
+    "limits": {
+      "max_steps": 20,
+      "max_seconds": 600
+    }
+  },
+  "tenant": "lakeshore",
+  "product_version": "7.2.4",
+  "started_at": "2026-09-11T05:49:56.283796Z",
+  "finished_at": "2026-09-11T05:51:10.362994Z",
+  "steps": [
+    {
+      "index": 0,
+      "actor": "agent",
+      "purpose": "flow",
+      "action": "click",
+      "rationale": "Click on Member Inquiry button to access member lookup functionality | I will click on the \"Member Inquiry\" button in the navigation menu to begin looking up the member information.",
+      "screen_before": "workstation_home",
+      "screen_after": "member_search",
+      "target": {
+        "frame": "nav",
+        "role": "button",
+        "name": "Member Inquiry",
+        "label": "",
+        "text": "Member Inquiry",
+        "tag": "td",
+        "inferred": true,
+        "candidates": [
+          {
+            "locator": {
+              "by": "role",
+              "role": "button",
+              "name": "Member Inquiry"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "attr",
+              "tag": "td",
+              "attrs": {
+                "onclick": {
+                  "value": "mbrinq.asp",
+                  "mode": "contains"
+                }
+              }
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "xpath",
+              "xpath": "/html/body/table/tbody/tr[2]/td"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          }
+        ]
+      },
+      "risk": "reversible",
+      "ok": true,
+      "frames_before": {
+        "top": "http://127.0.0.1:8765/t/lakeshore/default.asp",
+        "banner": "http://127.0.0.1:8765/t/lakeshore/banner.asp",
+        "nav": "http://127.0.0.1:8765/t/lakeshore/menu.asp",
+        "main": "http://127.0.0.1:8765/t/lakeshore/welcome.asp"
+      },
+      "frames_after": {
+        "top": "http://127.0.0.1:8765/t/lakeshore/default.asp",
+        "banner": "http://127.0.0.1:8765/t/lakeshore/banner.asp",
+        "nav": "http://127.0.0.1:8765/t/lakeshore/menu.asp",
+        "main": "http://127.0.0.1:8765/t/lakeshore/mbrinq.asp"
+      },
+      "at": "2026-09-11T05:50:07.693801Z"
+    },
+    {
+      "index": 1,
+      "actor": "agent",
+      "purpose": "flow",
+      "action": "fill",
+      "rationale": "Enter the member ID in the Member Number field to search for the member record. | I will enter the member ID in the Member Number field to search for the member record.",
+      "screen_before": "member_search",
+      "screen_after": "member_search",
+      "target": {
+        "frame": "main",
+        "role": "textbox",
+        "name": "",
+        "label": "Member Number",
+        "text": "",
+        "tag": "input",
+        "inferred": false,
+        "candidates": [
+          {
+            "locator": {
+              "by": "label",
+              "role": "textbox",
+              "label": "Member Number"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "attr",
+              "tag": "input",
+              "attrs": {
+                "name": "txtMbrNo"
+              }
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "css",
+              "css": "form[name=\"frmInq\"] input[name=\"txtMbrNo\"][type=\"TEXT\"]"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "xpath",
+              "xpath": "/html/body/form/table/tbody/tr[1]/td[2]/input"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          }
+        ]
+      },
+      "value": "{{inputs.member_id}}",
+      "risk": "reversible",
+      "ok": true,
+      "frames_before": {
+        "top": "http://127.0.0.1:8765/t/lakeshore/default.asp",
+        "banner": "http://127.0.0.1:8765/t/lakeshore/banner.asp",
+        "nav": "http://127.0.0.1:8765/t/lakeshore/menu.asp",
+        "main": "http://127.0.0.1:8765/t/lakeshore/mbrinq.asp"
+      },
+      "frames_after": {
+        "top": "http://127.0.0.1:8765/t/lakeshore/default.asp",
+        "banner": "http://127.0.0.1:8765/t/lakeshore/banner.asp",
+        "nav": "http://127.0.0.1:8765/t/lakeshore/menu.asp",
+        "main": "http://127.0.0.1:8765/t/lakeshore/mbrinq.asp"
+      },
+      "at": "2026-09-11T05:50:21.029369Z"
+    },
+    {
+      "index": 2,
+      "actor": "agent",
+      "purpose": "flow",
+      "action": "click",
+      "rationale": "Click the Search button to find the member record with the entered member number. | I will click the \"Search\" button to look up the member record with the entered member number.",
+      "screen_before": "member_search",
+      "screen_after": "member_detail",
+      "target": {
+        "frame": "main",
+        "role": "button",
+        "name": "Search",
+        "label": "Search",
+        "text": "",
+        "tag": "input",
+        "inferred": false,
+        "candidates": [
+          {
+            "locator": {
+              "by": "role",
+              "role": "button",
+              "name": "Search"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "css",
+              "css": "form[name=\"frmInq\"] input[type=\"BUTTON\"][value=\"Search\"]"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "xpath",
+              "xpath": "/html/body/form/table/tbody/tr[4]/td[2]/input[1]"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          }
+        ]
+      },
+      "risk": "reversible",
+      "ok": true,
+      "frames_before": {
+        "top": "http://127.0.0.1:8765/t/lakeshore/default.asp",
+        "banner": "http://127.0.0.1:8765/t/lakeshore/banner.asp",
+        "nav": "http://127.0.0.1:8765/t/lakeshore/menu.asp",
+        "main": "http://127.0.0.1:8765/t/lakeshore/mbrinq.asp"
+      },
+      "frames_after": {
+        "top": "http://127.0.0.1:8765/t/lakeshore/default.asp",
+        "banner": "http://127.0.0.1:8765/t/lakeshore/banner.asp",
+        "nav": "http://127.0.0.1:8765/t/lakeshore/menu.asp",
+        "main": "http://127.0.0.1:8765/t/lakeshore/mbrdtl.asp?m=100234&_k=8ae4f01b"
+      },
+      "at": "2026-09-11T05:50:27.604140Z"
+    },
+    {
+      "index": 3,
+      "actor": "agent",
+      "purpose": "flow",
+      "action": "extract",
+      "rationale": "Extract the member's name from the Name field on the member detail screen",
+      "screen_before": "member_detail",
+      "target": {
+        "frame": "main",
+        "role": "cell",
+        "name": "[pii]",
+        "label": "",
+        "text": "[pii]",
+        "tag": "td",
+        "inferred": false,
+        "sensitive": "pii",
+        "candidates": [
+          {
+            "locator": {
+              "by": "label",
+              "role": "cell",
+              "label": "Name"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "xpath",
+              "xpath": "/html/body/table[2]/tbody/tr/td/table/tbody/tr[2]/td[2]"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          }
+        ]
+      },
+      "output": "member_name",
+      "risk": "read",
+      "ok": true,
+      "frames_before": {
+        "top": "http://127.0.0.1:8765/t/lakeshore/default.asp",
+        "banner": "http://127.0.0.1:8765/t/lakeshore/banner.asp",
+        "nav": "http://127.0.0.1:8765/t/lakeshore/menu.asp",
+        "main": "http://127.0.0.1:8765/t/lakeshore/mbrdtl.asp?m=100234&_k=8ae4f01b"
+      },
+      "frames_after": {
+        "top": "http://127.0.0.1:8765/t/lakeshore/default.asp",
+        "banner": "http://127.0.0.1:8765/t/lakeshore/banner.asp",
+        "nav": "http://127.0.0.1:8765/t/lakeshore/menu.asp",
+        "main": "http://127.0.0.1:8765/t/lakeshore/mbrdtl.asp?m=100234&_k=8ae4f01b"
+      },
+      "at": "2026-09-11T05:50:38.355970Z"
+    },
+    {
+      "index": 4,
+      "actor": "agent",
+      "purpose": "flow",
+      "action": "extract",
+      "rationale": "Extract the current balance value for the Share Savings account from the member detail page",
+      "screen_before": "member_detail",
+      "target": {
+        "frame": "main",
+        "role": "cell",
+        "name": "[financial]",
+        "label": "",
+        "text": "[financial]",
+        "tag": "td",
+        "inferred": false,
+        "sensitive": "financial",
+        "candidates": [
+          {
+            "locator": {
+              "by": "table_cell",
+              "headers": [
+                "Description",
+                "Current Balance"
+              ],
+              "row": {
+                "Description": "Share Savings"
+              },
+              "column": "Current Balance"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "xpath",
+              "xpath": "/html/body/table[3]/tbody/tr[2]/td[4]"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          }
+        ]
+      },
+      "output": "savings_balance",
+      "risk": "read",
+      "ok": true,
+      "frames_before": {
+        "top": "http://127.0.0.1:8765/t/lakeshore/default.asp",
+        "banner": "http://127.0.0.1:8765/t/lakeshore/banner.asp",
+        "nav": "http://127.0.0.1:8765/t/lakeshore/menu.asp",
+        "main": "http://127.0.0.1:8765/t/lakeshore/mbrdtl.asp?m=100234&_k=8ae4f01b"
+      },
+      "frames_after": {
+        "top": "http://127.0.0.1:8765/t/lakeshore/default.asp",
+        "banner": "http://127.0.0.1:8765/t/lakeshore/banner.asp",
+        "nav": "http://127.0.0.1:8765/t/lakeshore/menu.asp",
+        "main": "http://127.0.0.1:8765/t/lakeshore/mbrdtl.asp?m=100234&_k=8ae4f01b"
+      },
+      "at": "2026-09-11T05:50:47.319440Z"
+    },
+    {
+      "index": 5,
+      "actor": "agent",
+      "purpose": "flow",
+      "action": "extract",
+      "rationale": "Extract the available balance value from the Share Savings account row in the accounts table",
+      "screen_before": "member_detail",
+      "target": {
+        "frame": "main",
+        "role": "cell",
+        "name": "[financial]",
+        "label": "",
+        "text": "[financial]",
+        "tag": "td",
+        "inferred": false,
+        "sensitive": "financial",
+        "candidates": [
+          {
+            "locator": {
+              "by": "table_cell",
+              "headers": [
+                "Description",
+                "Available Balance"
+              ],
+              "row": {
+                "Description": "Share Savings"
+              },
+              "column": "Available Balance"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "xpath",
+              "xpath": "/html/body/table[3]/tbody/tr[2]/td[5]"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          }
+        ]
+      },
+      "output": "available_balance",
+      "risk": "read",
+      "ok": true,
+      "frames_before": {
+        "top": "http://127.0.0.1:8765/t/lakeshore/default.asp",
+        "banner": "http://127.0.0.1:8765/t/lakeshore/banner.asp",
+        "nav": "http://127.0.0.1:8765/t/lakeshore/menu.asp",
+        "main": "http://127.0.0.1:8765/t/lakeshore/mbrdtl.asp?m=100234&_k=8ae4f01b"
+      },
+      "frames_after": {
+        "top": "http://127.0.0.1:8765/t/lakeshore/default.asp",
+        "banner": "http://127.0.0.1:8765/t/lakeshore/banner.asp",
+        "nav": "http://127.0.0.1:8765/t/lakeshore/menu.asp",
+        "main": "http://127.0.0.1:8765/t/lakeshore/mbrdtl.asp?m=100234&_k=8ae4f01b"
+      },
+      "at": "2026-09-11T05:50:54.241324Z"
+    }
+  ],
+  "interventions": [],
+  "extracted": {
+    "member_name": {
+      "sensitivity": "pii",
+      "fingerprint": "hmac:7bdae3f3680cb3c0"
+    },
+    "savings_balance": {
+      "sensitivity": "financial",
+      "fingerprint": "hmac:3667b28d4af5ffb7"
+    },
+    "available_balance": {
+      "sensitivity": "financial",
+      "fingerprint": "hmac:27ca2ab3c5810eac"
+    }
+  },
+  "platform": [],
+  "finish": {
+    "status": "success",
+    "summary": "Successfully looked up member 100234 and extracted all required information: member name, Share Savings current balance ([financial]), and Share Savings available balance ([financial]).",
+    "success": {
+      "kind": "screen",
+      "screen": "member_detail"
+    }
+  },
+  "llm": {
+    "model": "glm-4.6v",
+    "calls": 7,
+    "input_tokens": 30256,
+    "output_tokens": 1459,
+    "cache_read_tokens": 0
+  }
+}

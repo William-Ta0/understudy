@@ -15,7 +15,7 @@ from ..evidence import Evidence
 from ..schema import AppProfile, ClickStep, ConditionKind, FillStep, Sensitivity, TenantBinding
 from ..surface.web import WebSurface
 from .conditions import ConditionEvaluator
-from .recovery import RecoveryExhausted, Recoverer
+from .recovery import Recoverer, RecoveryExhausted
 from .values import Renderer
 
 

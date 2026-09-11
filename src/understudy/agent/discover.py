@@ -9,12 +9,12 @@ replay uses, and is recorded with its target described and validated at that ins
 from __future__ import annotations
 
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from ..hitl.control import LiveSession
 from ..runtime.conditions import ConditionEvaluator
-from ..runtime.recovery import RecoveryExhausted, Recoverer
+from ..runtime.recovery import Recoverer, RecoveryExhausted
 from ..runtime.session import SessionManager
 from ..runtime.values import Renderer, parse_output, validate_inputs
 from ..schema import (
@@ -40,7 +40,7 @@ ACTION_TOOLS = {"click": "click", "click_at": "click", "fill": "fill", "select_o
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class DiscoveryAgent:

@@ -1,0 +1,56 @@
+{
+  "run_id": "rep-20260911-135110-03ee",
+  "capability": {
+    "id": "keystone.member.lookup_balance",
+    "version": "1.0.0",
+    "content_hash": "sha256:bb1fca2cf4b25cf59ab689337067eb73c07c6493d6df45739ae63de55bc499a3"
+  },
+  "tenant": "lakeshore",
+  "status": "succeeded",
+  "outputs": {
+    "member_name": {
+      "redacted": "pii",
+      "fp": "hmac:7bdae3f3680cb3c0"
+    },
+    "savings_balance": {
+      "redacted": "financial",
+      "fp": "hmac:3667b28d4af5ffb7"
+    },
+    "available_balance": {
+      "redacted": "financial",
+      "fp": "hmac:27ca2ab3c5810eac"
+    }
+  },
+  "recoveries": [],
+  "warnings": [],
+  "interventions": [],
+  "steps": [
+    {
+      "id": "click_member_inquiry",
+      "status": "done",
+      "duration_ms": 505,
+      "locator": "role=button name=\"Member Inquiry\""
+    },
+    {
+      "id": "enter_member_number",
+      "status": "done",
+      "duration_ms": 473,
+      "locator": "label=\"Member Number\" role=textbox"
+    },
+    {
+      "id": "click_search",
+      "status": "done",
+      "duration_ms": 466,
+      "locator": "role=button name=\"Search\""
+    },
+    {
+      "id": "read_member_detail",
+      "status": "done",
+      "duration_ms": 37
+    }
+  ],
+  "started_at": "2026-09-11T05:51:10.928645Z",
+  "finished_at": "2026-09-11T05:51:13.207110Z",
+  "duration_ms": 2278,
+  "evidence_dir": "/Users/williammac/Desktop/project/understudy/evidence/runs/20260911-135110-replay-verify"
+}

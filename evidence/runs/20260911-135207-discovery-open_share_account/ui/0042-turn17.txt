@@ -1,0 +1,23 @@
+== frame "banner" · /t/lakeshore/banner.asp · ""
+  [b1] cell "Lakeshore Community Credit Union Keystone Core 7.2 · Teller Workstation"
+  [b2] text "Lakeshore Community Credit Union"
+  [b3] text "Keystone Core 7.2 · Teller Workstation"
+  [b4] link "Sign Off"
+== frame "nav" · /t/lakeshore/menu.asp · ""
+  [n1] cell "Functions"
+  [n2] button "Member Inquiry" (clickable <td>)
+  [n3] button "Open Sub-Account" (clickable <td>)
+  [n4] button "Teller Transactions" (clickable <td>)
+  [n5] button "Reports" (clickable <td>)
+  [n6] button "Administration" (clickable <td>)
+== frame "main" · /t/lakeshore/sharecnf.asp?c=KC-20260911-0417&s=20&m=104410 · "Keystone Core - Sub-Account Opened"
+  [m1] cell "Sub-Account Opened"
+  [m2] text "The sub-account was opened successfully."
+  [m3] cell "Member Number:"
+  [m4] cell "104410"
+  [m5] cell "New Suffix:"
+  [m6] cell "20"
+  [m7] cell "Product:"
+  [m8] cell "Money Market Share"
+  [m9] cell "Confirmation Number:"
+  [m10] cell "KC-20260911-0417"

@@ -69,11 +69,19 @@ _DEFAULTS = {"timeout_ms": 15000, "approval": "none", "origin": "agent", "read":
              "retryable": False, "nth": None}
 
 
+# A capability reads top-down: identity, then the contract, then the flow, then the evidence.
+_CAPABILITY_ORDER = ["schema", "id", "version", "title", "description", "status", "app", "risk", "inputs", "outputs",
+                     "outcomes", "entry", "steps", "success", "provenance", "review"]
+
+
 def _tidy(x: Any, parent: str | None = None) -> Any:
     if isinstance(x, list):
         return [_tidy(v, parent) for v in x]
     if not isinstance(x, dict):
         return x
+    if parent is None and str(x.get("schema", "")).startswith("understudy/capability"):
+        items = {k: _tidy(v, k) for k, v in x.items()}
+        return {k: items[k] for k in _CAPABILITY_ORDER if k in items} | {k: v for k, v in items.items() if k not in _CAPABILITY_ORDER}
     if parent in ("inputs", "outputs", "row", "attrs", "vocabulary", "capability_overrides", "targets", "context"):
         return {k: _tidy(v, k) for k, v in x.items()}  # user-named keys: keep their order
     items = {k: _tidy(v, k) for k, v in x.items() if not (k in _DEFAULTS and v == _DEFAULTS[k])}

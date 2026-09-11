@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -25,11 +25,11 @@ def _step(i, action, *, target=None, value=None, output=None, before=None, after
           risk=Risk.reversible, rationale="x", checkpoint=None) -> TraceStep:
     return TraceStep(index=i, actor=actor, purpose=purpose, action=action, rationale=rationale, target=target, value=value,
                      output=output, screen_before=before, screen_after=after, risk=risk, checkpoint=checkpoint,
-                     at=datetime.now(timezone.utc))
+                     at=datetime.now(UTC))
 
 
 def _lookup_trace(member_label: str = "Member Number", tenant: str = "lakeshore") -> Trace:
-    from understudy.schema import TextCondition, TextMatch, Scope
+    from understudy.schema import Scope, TextCondition, TextMatch
 
     goal = load_goal("lookup_balance")
     steps = [
@@ -59,7 +59,7 @@ def _lookup_trace(member_label: str = "Member Number", tenant: str = "lakeshore"
               target=_t("main", "cell", cands=[{"by": "table_cell", "headers": ["Description", "Available Balance"],
                                                 "row": {"Description": "Share Savings"}, "column": "Available Balance"}])),
     ]
-    return Trace(run_id="dis-test", goal=goal, tenant=tenant, product_version="7.2.4", started_at=datetime.now(timezone.utc),
+    return Trace(run_id="dis-test", goal=goal, tenant=tenant, product_version="7.2.4", started_at=datetime.now(UTC),
                  steps=steps, finish=Finish(status="success", summary="ok", success={"kind": "screen", "screen": "member_detail"}))
 
 

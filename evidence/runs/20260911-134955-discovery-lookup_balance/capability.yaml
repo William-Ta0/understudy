@@ -1,0 +1,186 @@
+# compiled from discovery run dis-20260911-134955-aba7
+schema: understudy/capability@1
+id: keystone.member.lookup_balance
+version: 1.0.0
+title: Look up a member's savings balance
+description: Look up member {{inputs.member_id}} and read the current balance and the available balance of the member's
+  primary savings account (the "Share Savings" account), and the member's name as shown on the member record.
+status: verified
+outputs:
+  member_name:
+    description: The member's name as shown on the member record
+    type: string
+    sensitivity: pii
+    source:
+      description: value next to the label "Name" in the main frame
+      within:
+      - frame: main
+      locators:
+      - by: label
+        label: Name
+        role: cell
+        why: the label printed next to the field; survives layout changes; tenant relabels go through vocabulary
+  savings_balance:
+    description: Current balance of the member's Share Savings account
+    type: money
+    sensitivity: financial
+    source:
+      description: '"Current Balance" cell of the row where Description = Share Savings in the main frame'
+      within:
+      - frame: main
+      locators:
+      - by: table_cell
+        headers:
+        - Description
+        - Current Balance
+        row:
+          Description: Share Savings
+        column: Current Balance
+        why: a grid value by column header and row key, never by position
+  available_balance:
+    description: Available balance of the member's Share Savings account
+    type: money
+    sensitivity: financial
+    source:
+      description: '"Available Balance" cell of the row where Description = Share Savings in the main frame'
+      within:
+      - frame: main
+      locators:
+      - by: table_cell
+        headers:
+        - Description
+        - Available Balance
+        row:
+          Description: Share Savings
+        column: Available Balance
+        why: a grid value by column header and row key, never by position
+risk: reversible
+app:
+  product: keystone-core
+  profile: keystone-core@7
+  versions: '>=7.0,<8'
+inputs:
+  member_id:
+    description: Member number (4 to 10 digits)
+    type: string
+    pattern: ^[0-9]{4,10}$
+    sensitivity: internal
+    example: '100234'
+outcomes:
+- code: MEMBER_NOT_FOUND
+  description: No member has this member number.
+  condition: record_not_found
+- code: MEMBER_RESTRICTED
+  description: The member record is restricted and balances are withheld. Refer the request to a supervisor.
+  condition: member_restricted
+- code: PERMISSION_DENIED
+  description: The service account is not allowed to use member inquiry.
+  condition: access_denied
+- code: INVALID_MEMBER_NUMBER
+  description: The application rejected the member number.
+  condition: validation_error
+entry:
+  screen: workstation_home
+steps:
+- id: click_member_inquiry
+  action: click
+  intent: Click on Member Inquiry button to access member lookup functionality
+  screen: workstation_home
+  target:
+    description: button "Member Inquiry" in the nav frame
+    within:
+    - frame: nav
+    locators:
+    - by: role
+      role: button
+      name: Member Inquiry
+      why: 'role + accessible name: what the operator reads; survives layout and generated-id changes'
+    - by: attr
+      tag: td
+      attrs:
+        onclick:
+          value: mbrinq.asp
+          mode: contains
+      why: vendor-set attribute (form field name or route); invisible to users, so tenants rarely change it
+  expect:
+    kind: screen
+    screen: member_search
+  risk: reversible
+- id: enter_member_number
+  action: fill
+  intent: Enter the member ID in the Member Number field to search for the member record.
+  screen: member_search
+  target:
+    description: textbox "Member Number" in the main frame
+    within:
+    - frame: main
+    locators:
+    - by: label
+      label: Member Number
+      role: textbox
+      why: the label printed next to the field; survives layout changes; tenant relabels go through vocabulary
+    - by: attr
+      tag: input
+      attrs:
+        name: txtMbrNo
+      why: vendor-set attribute (form field name or route); invisible to users, so tenants rarely change it
+    - by: css
+      css: form[name="frmInq"] input[name="txtMbrNo"][type="TEXT"]
+      why: stable attributes only (no generated ids); last resort
+  value: '{{inputs.member_id}}'
+  risk: reversible
+- id: click_search
+  action: click
+  intent: Click the Search button to find the member record with the entered member number.
+  screen: member_search
+  target:
+    description: button "Search" in the main frame
+    within:
+    - frame: main
+    locators:
+    - by: role
+      role: button
+      name: Search
+      why: 'role + accessible name: what the operator reads; survives layout and generated-id changes'
+    - by: css
+      css: form[name="frmInq"] input[type="BUTTON"][value="Search"]
+      why: stable attributes only (no generated ids); last resort
+  expect:
+    kind: screen
+    screen: member_detail
+  risk: reversible
+- id: read_member_detail
+  action: extract
+  intent: Read the declared outputs from the screen
+  screen: member_detail
+  outputs:
+  - member_name
+  - savings_balance
+  - available_balance
+  risk: read
+success:
+  kind: screen
+  screen: member_detail
+provenance:
+  discovered:
+    run_id: dis-20260911-134955-aba7
+    goal: Look up member {{inputs.member_id}} and read the current balance and the available balance of the member's
+      primary savings account (the "Share Savings" account), and the member's name as shown on the member record.
+    model: glm-4.6v
+    tenant: lakeshore
+    product_version: 7.2.4
+    at: '2026-09-11T05:49:56.283796Z'
+    agent_steps: 6
+    human_steps: 0
+    llm_calls: 7
+  compiled_by: understudy 0.1.0
+  trace_digest: sha256:d9fa8df9b6b4fdf0d4eb9954097428647da1af963598758c1fa120f290b3d096
+  verifications:
+  - status: succeeded
+    run_id: rep-20260911-135110-03ee
+    at: '2026-09-11T05:51:13.244557Z'
+    tenant: lakeshore
+    duration_ms: 2278
+review:
+  notes: []
+  approvals: []

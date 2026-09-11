@@ -1,7 +1,8 @@
 [project]
 name = "understudy"
 version = "0.1.0"
-description = "Add your description here"
+readme = "README.md"
+description = "Learn a back-office UI flow once with an LLM, then replay it deterministically as a typed, reviewable capability."
 authors = [
     { name = "William-Ta0", email = "williamtao030206@outlook.com" }
 ]
@@ -59,3 +60,6 @@ src = ["src", "tests"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM"]
 ignore = ["E501", "B008", "SIM105", "UP042"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/understudy/schema/__init__.py" = ["F401"]  # re-export module

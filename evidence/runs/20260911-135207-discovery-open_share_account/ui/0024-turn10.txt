@@ -1,0 +1,26 @@
+== frame "banner" · /t/lakeshore/banner.asp · ""
+  [b1] cell "Lakeshore Community Credit Union Keystone Core 7.2 · Teller Workstation"
+  [b2] text "Lakeshore Community Credit Union"
+  [b3] text "Keystone Core 7.2 · Teller Workstation"
+  [b4] link "Sign Off"
+== frame "nav" · /t/lakeshore/menu.asp · ""
+  [n1] cell "Functions"
+  [n2] button "Member Inquiry" (clickable <td>)
+  [n3] button "Open Sub-Account" (clickable <td>)
+  [n4] button "Teller Transactions" (clickable <td>)
+  [n5] button "Reports" (clickable <td>)
+  [n6] button "Administration" (clickable <td>)
+== frame "main" · /t/lakeshore/shareadd.asp?m=104410&_k=… · "Keystone Core - Open Sub-Account"
+  [m1] cell "Open Sub-Account - Member 104410"
+  [m2] text "Member:"
+  [m3] text [pii]
+  [m4] cell "Product:"
+  [m5] combobox "Product" options: "-- Select --" | "Share Savings" [value=SAV] | "Money Market Share" [value=MMS] | "Holiday Club" [value=HCL] | "Share Certificate 12 Mo" [value=C12] selected="Money Market Share"
+  [m6] cell "Account Nickname:"
+  [m7] textbox "Account Nickname" value="Rainy day fund"
+  [m8] cell "Opening Deposit:"
+  [m9] textbox "Opening Deposit" value=[financial]
+  [m10] cell "Fund From:"
+  [m11] combobox "Fund From" options: "-- Select --" | "00 - Share Savings ([financial] avail)" [value=00] | "10 - Share Draft Checking ([financial] avail)" [value=10] | "21 - Money Market Share ([financial] avail)" [value=21] selected="-- Select --"
+  [m12] button "Continue"
+  [m13] button "Cancel"

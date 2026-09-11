@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from pydantic import ValidationError
@@ -88,7 +88,7 @@ def test_content_hash_covers_behaviour_not_lifecycle():
 
 def test_approval_binds_to_content_hash():
     cap = _cap()
-    appr = Approval(by="reviewer", at=datetime.now(timezone.utc), content_hash=cap.content_hash())
+    appr = Approval(by="reviewer", at=datetime.now(UTC), content_hash=cap.content_hash())
     approved = cap.model_copy(update={"status": Lifecycle.approved, "review": cap.review.model_copy(update={"approvals": [appr]})})
     assert approved.is_approved()
     body = approved.dump()

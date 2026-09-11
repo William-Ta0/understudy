@@ -424,7 +424,7 @@ class WebSurface:
         if self._inflight is not None:
             try:
                 await asyncio.wait_for(self._inflight, timeout=10)
-            except (asyncio.TimeoutError, PlaywrightError):
+            except (TimeoutError, PlaywrightError):
                 pass
             self._inflight = None
 

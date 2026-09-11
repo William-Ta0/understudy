@@ -186,7 +186,7 @@ class Compiler:
         screen in frame F, and the next action happened elsewhere and loaded new content into F."""
         acts = [s for s in trace.steps if s.actor == "agent" and s.ok and s.action in ("click", "fill", "select", "press")]
         out: set[int] = set()
-        for k, n in zip(acts, acts[1:]):
+        for k, n in zip(acts, acts[1:], strict=False):
             if k.action != "click" or k.purpose != "flow" or k.screen_after is not None or not k.frames_before:
                 continue
             changed_k = {f for f, u in k.frames_after.items() if k.frames_before.get(f) != u}

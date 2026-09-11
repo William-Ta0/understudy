@@ -1,0 +1,17 @@
+== frame "banner" · /t/lakeshore/banner.asp · ""
+  [b1] cell "Lakeshore Community Credit Union Keystone Core 7.2 · Teller Workstation"
+  [b2] text "Lakeshore Community Credit Union"
+  [b3] text "Keystone Core 7.2 · Teller Workstation"
+  [b4] link "Sign Off"
+== frame "nav" · /t/lakeshore/menu.asp · ""
+  [n1] cell "Functions"
+  [n2] button "Member Inquiry" (clickable <td>)
+  [n3] button "Open Sub-Account" (clickable <td>)
+  [n4] button "Teller Transactions" (clickable <td>)
+  [n5] button "Reports" (clickable <td>)
+  [n6] button "Administration" (clickable <td>)
+== frame "main" · /t/lakeshore/welcome.asp · "Keystone Core - Teller Workstation"
+  [m1] cell "Teller Workstation"
+  [m2] text "Select a function from the menu on the left."
+  [m3] text "Host status: Branch 001 Drawer 04"
+  [m4] text "ONLINE"

@@ -1,0 +1,31 @@
+== frame "banner" · /t/lakeshore/banner.asp · ""
+  [b1] cell "Lakeshore Community Credit Union Keystone Core 7.2 · Teller Workstation"
+  [b2] text "Lakeshore Community Credit Union"
+  [b3] text "Keystone Core 7.2 · Teller Workstation"
+  [b4] link "Sign Off"
+== frame "nav" · /t/lakeshore/menu.asp · ""
+  [n2] cell "Functions"
+  [n3] button "Member Inquiry" (clickable <td>)
+  [n4] button "Open Sub-Account" (clickable <td>)
+  [n5] button "Teller Transactions" (clickable <td>)
+  [n6] button "Reports" (clickable <td>)
+  [n7] button "Administration" (clickable <td>)
+== frame "main" · /t/lakeshore/sharerev.asp?r=… · "Keystone Core - Review New Sub-Account"
+  [m3] cell "Review New Sub-Account"
+  [m4] text "Please verify the information below with the member. Press to open the account. This action cannot be undone."
+  [m5] text "Confirm & Open Account"
+  [m6] cell "Member:"
+  [m7] cell [pii]
+  [m8] cell "Product:"
+  [m9] cell "Money Market Share"
+  [m10] cell "Account Nickname:"
+  [m11] cell "Rainy day fund"
+  [m12] cell "Opening Deposit:"
+  [m13] cell [financial]
+  [m14] cell "Fund From:"
+  [m15] cell "00 - Share Savings"
+  [m16] cell "Dividend Rate:"
+  [m17] cell "2.35%"
+  [m18] button "Confirm & Open Account"
+  [m19] button "Back"
+  [m20] button "Cancel"

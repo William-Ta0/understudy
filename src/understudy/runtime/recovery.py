@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from ..evidence import Evidence
 from ..safety.policy import PolicyGuard
@@ -45,7 +45,7 @@ class Recoverer:
         else:
             await asyncio.sleep(delay / 1000)
         self.records.append(RecoveryRecord(condition=rc.id, step_id=step_id, action=spec.do, attempt=n,
-                                           at=datetime.now(timezone.utc)))
+                                           at=datetime.now(UTC)))
         self.evidence.event("recovery", condition=rc.id, step=step_id, action=spec.do, attempt=n, max=spec.max_attempts)
         if spec.do == "click":
             assert spec.target is not None

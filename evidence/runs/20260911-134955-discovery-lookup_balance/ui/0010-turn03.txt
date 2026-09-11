@@ -1,0 +1,22 @@
+== frame "banner" · /t/lakeshore/banner.asp · ""
+  [b1] cell "Lakeshore Community Credit Union Keystone Core 7.2 · Teller Workstation"
+  [b2] text "Lakeshore Community Credit Union"
+  [b3] text "Keystone Core 7.2 · Teller Workstation"
+  [b4] link "Sign Off"
+== frame "nav" · /t/lakeshore/menu.asp · ""
+  [n1] cell "Functions"
+  [n2] button "Member Inquiry" (clickable <td>)
+  [n3] button "Open Sub-Account" (clickable <td>)
+  [n4] button "Teller Transactions" (clickable <td>)
+  [n5] button "Reports" (clickable <td>)
+  [n6] button "Administration" (clickable <td>)
+== frame "main" · /t/lakeshore/mbrinq.asp · "Keystone Core - Member Inquiry"
+  [m1] cell "Member Inquiry"
+  [m2] cell "Member Number:"
+  [m3] textbox "Member Number" value="100234"
+  [m4] cell "Last Name:"
+  [m5] textbox "Last Name" value=""
+  [m6] cell "SSN (last 4):"
+  [m7] textbox "SSN (last 4)" value=""
+  [m8] button "Search"
+  [m9] button "Clear"

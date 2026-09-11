@@ -1,0 +1,49 @@
+== frame "banner" · /t/lakeshore/banner.asp · ""
+  [b1] cell "Lakeshore Community Credit Union Keystone Core 7.2 · Teller Workstation"
+  [b2] text "Lakeshore Community Credit Union"
+  [b3] text "Keystone Core 7.2 · Teller Workstation"
+  [b4] link "Sign Off"
+== frame "nav" · /t/lakeshore/menu.asp · ""
+  [n1] cell "Functions"
+  [n2] button "Member Inquiry" (clickable <td>)
+  [n3] button "Open Sub-Account" (clickable <td>)
+  [n4] button "Teller Transactions" (clickable <td>)
+  [n5] button "Reports" (clickable <td>)
+  [n6] button "Administration" (clickable <td>)
+== frame "main" · /t/lakeshore/mbrdtl.asp?m=100234&_k=… · "Keystone Core - Member Detail"
+  [m1] cell "Member Detail - 100234"
+  [m2] cell "Member Number:"
+  [m3] cell "100234"
+  [m4] cell "Name:"
+  [m5] cell [pii]
+  [m6] cell "Member Since:"
+  [m7] cell "04/18/2011"
+  [m8] cell "SSN:"
+  [m9] cell [pii]
+  [m10] cell "Date of Birth:"
+  [m11] cell [pii]
+  [m12] cell "Address:"
+  [m13] cell [pii]
+  [m14] cell "Home Phone:"
+  [m15] cell [pii]
+  [m16] cell "E-Mail:"
+  [m17] cell [pii]
+  [m18] text "Accounts"
+  [m19] columnheader "Suffix"
+  [m20] columnheader "Description"
+  [m21] columnheader "Status"
+  [m22] columnheader "Current Balance"
+  [m23] columnheader "Available Balance"
+  [m24] cell "00" (column "Suffix", row "00")
+  [m25] cell "Share Savings" (column "Description", row "00")
+  [m26] cell "Open" (column "Status", row "00")
+  [m27] cell [financial] (column "Current Balance", row "00")
+  [m28] cell [financial] (column "Available Balance", row "00")
+  [m29] cell "10" (column "Suffix", row "10")
+  [m30] cell "Share Draft Checking" (column "Description", row "10")
+  [m31] cell "Open" (column "Status", row "10")
+  [m32] cell [financial] (column "Current Balance", row "10")
+  [m33] cell [financial] (column "Available Balance", row "10")
+  [m34] link "Open Sub-Account"
+  [m35] link "Transaction History"
+  [m36] link "Print"

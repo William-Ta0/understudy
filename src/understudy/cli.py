@@ -15,7 +15,7 @@ import asyncio
 import json
 import os
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -46,8 +46,13 @@ def _kv(pairs: list[str]) -> dict[str, str]:
 
 
 def _printer(verbose: bool):
+    from rich.markup import escape
+
     def show(e: dict[str, Any]) -> None:
-        t, d = e["type"], e
+        t = e["type"]
+        d = {k: (escape(v) if isinstance(v, str) else v) for k, v in e.items()}  # "[financial]" is data, not markup
+        if isinstance(d.get("args"), dict):
+            d["args"] = {k: (escape(v) if isinstance(v, str) else v) for k, v in d["args"].items()}
         ts = f"[dim]{e['t']:6.2f}s[/]"
         if t == "step_started":
             out.print(f"{ts} [bold]▶ {d['step']}[/] [dim]{d.get('intent', '')}[/]")
@@ -285,7 +290,7 @@ def approve(capability: str, by: str = typer.Option(..., "--by"), note: str = ty
     if blockers:
         out.print(f"[red]{len(blockers)} blocker note(s) must be resolved first[/]")
         raise typer.Exit(1)
-    appr = Approval(by=by, at=datetime.now(timezone.utc), content_hash=cap.content_hash(), note=note)
+    appr = Approval(by=by, at=datetime.now(UTC), content_hash=cap.content_hash(), note=note)
     cap = cap.model_copy(update={"status": Lifecycle.approved, "review": cap.review.model_copy(update={"approvals": [*cap.review.approvals, appr]})})
     path = store.save(cap)
     out.print(f"approved {cap.id}@{cap.version} ({appr.content_hash}) -> {path}")

@@ -1,0 +1,158 @@
+{
+  "request_id": "int-d09652",
+  "operator": "sup.kim",
+  "resolution": "resume",
+  "note": "Supervisor authorised the deposit at the workstation.",
+  "claimed_at": "2026-09-11T08:40:05.287197Z",
+  "released_at": "2026-09-11T08:40:10.406949Z",
+  "human_actions": [
+    {
+      "at": "2026-09-11T08:40:07.424610Z",
+      "kind": "input",
+      "frame": "main",
+      "target": {
+        "role": "textbox",
+        "label": "Supervisor ID",
+        "tag": "input",
+        "candidates": [
+          {
+            "locator": {
+              "by": "label",
+              "role": "textbox",
+              "label": "Supervisor ID"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "attr",
+              "tag": "input",
+              "attrs": {
+                "name": "supId"
+              }
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "css",
+              "css": "input[name=\"supId\"][type=\"TEXT\"]"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "xpath",
+              "xpath": "/html/body/form/table/tbody/tr[1]/td[2]/input"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          }
+        ]
+      },
+      "value": "sup_kim"
+    },
+    {
+      "at": "2026-09-11T08:40:09.490233Z",
+      "kind": "input",
+      "frame": "main",
+      "target": {
+        "role": "textbox",
+        "label": "Override Code",
+        "tag": "input",
+        "sensitive": "secret",
+        "candidates": [
+          {
+            "locator": {
+              "by": "label",
+              "role": "textbox",
+              "label": "Override Code"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "attr",
+              "tag": "input",
+              "attrs": {
+                "name": "supCode"
+              }
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "css",
+              "css": "input[name=\"supCode\"][type=\"PASSWORD\"]"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "xpath",
+              "xpath": "/html/body/form/table/tbody/tr[2]/td[2]/input"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          }
+        ]
+      },
+      "value": "[secret]"
+    },
+    {
+      "at": "2026-09-11T08:40:09.491957Z",
+      "kind": "click",
+      "frame": "main",
+      "target": {
+        "role": "button",
+        "name": "Submit Override",
+        "label": "Submit Override",
+        "tag": "input",
+        "candidates": [
+          {
+            "locator": {
+              "by": "role",
+              "role": "button",
+              "name": "Submit Override"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "css",
+              "css": "input[type=\"SUBMIT\"][value=\"Submit\\ Override\"]"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          },
+          {
+            "locator": {
+              "by": "xpath",
+              "xpath": "/html/body/form/table/tbody/tr[3]/td[2]/input"
+            },
+            "matches": 1,
+            "unique": true,
+            "same": true
+          }
+        ]
+      }
+    }
+  ]
+}

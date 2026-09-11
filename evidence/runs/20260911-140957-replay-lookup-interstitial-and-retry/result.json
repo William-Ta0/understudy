@@ -1,0 +1,71 @@
+{
+  "run_id": "rep-20260911-140957-363b",
+  "capability": {
+    "id": "keystone.member.lookup_balance",
+    "version": "1.0.0",
+    "content_hash": "sha256:bb1fca2cf4b25cf59ab689337067eb73c07c6493d6df45739ae63de55bc499a3"
+  },
+  "tenant": "lakeshore",
+  "status": "succeeded",
+  "outputs": {
+    "member_name": {
+      "redacted": "pii",
+      "fp": "hmac:7bdae3f3680cb3c0"
+    },
+    "savings_balance": {
+      "redacted": "financial",
+      "fp": "hmac:3667b28d4af5ffb7"
+    },
+    "available_balance": {
+      "redacted": "financial",
+      "fp": "hmac:27ca2ab3c5810eac"
+    }
+  },
+  "recoveries": [
+    {
+      "condition": "host_timeout",
+      "step_id": "click_search",
+      "action": "click",
+      "attempt": 1,
+      "at": "2026-09-11T06:09:59.756667Z"
+    },
+    {
+      "condition": "system_notice",
+      "step_id": "click_search",
+      "action": "click",
+      "attempt": 1,
+      "at": "2026-09-11T06:10:00.864392Z"
+    }
+  ],
+  "warnings": [],
+  "interventions": [],
+  "steps": [
+    {
+      "id": "click_member_inquiry",
+      "status": "done",
+      "duration_ms": 353,
+      "locator": "role=button name=\"Member Inquiry\""
+    },
+    {
+      "id": "enter_member_number",
+      "status": "done",
+      "duration_ms": 447,
+      "locator": "label=\"Member Number\" role=textbox"
+    },
+    {
+      "id": "click_search",
+      "status": "done",
+      "duration_ms": 2296,
+      "locator": "role=button name=\"Search\""
+    },
+    {
+      "id": "read_member_detail",
+      "status": "done",
+      "duration_ms": 35
+    }
+  ],
+  "started_at": "2026-09-11T06:09:57.589455Z",
+  "finished_at": "2026-09-11T06:10:01.537330Z",
+  "duration_ms": 3948,
+  "evidence_dir": "/Users/williammac/Desktop/project/understudy/evidence/runs/20260911-140957-replay-lookup-interstitial-and-retry"
+}

@@ -99,6 +99,7 @@ async def test_supervisor_takes_over_the_live_session_and_hands_back(mock, evide
     kinds = [(i.kind, i.resolution, i.operator) for i in res.interventions]
     assert kinds == [("human_required", "resume", "sup.kim"), ("approval", "approve", "sup.kim")]
     assert res.interventions[0].human_actions == 3  # typed id, typed code, pressed Submit (focus clicks are not actions)
+    assert res.interventions[1].human_actions == 0  # approving from the paused state is a decision, not actions
     events = (Path(res.evidence_dir) / "events.jsonl").read_text()
     assert '"[secret]"' in events and "4471" not in events  # the override code was captured as a secret, never its value
 

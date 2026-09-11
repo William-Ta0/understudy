@@ -1,0 +1,277 @@
+{
+  "$defs": {
+    "Limits": {
+      "additionalProperties": false,
+      "properties": {
+        "max_steps": {
+          "default": 30,
+          "title": "Max Steps",
+          "type": "integer"
+        },
+        "max_seconds": {
+          "default": 600,
+          "title": "Max Seconds",
+          "type": "integer"
+        }
+      },
+      "title": "Limits",
+      "type": "object"
+    },
+    "OutcomeSpec": {
+      "additionalProperties": false,
+      "description": "An expected, legitimate result other than success. Not an error: the caller must handle it.",
+      "properties": {
+        "code": {
+          "description": "UPPER_SNAKE code returned to the caller, e.g. MEMBER_NOT_FOUND.",
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "condition": {
+          "description": "Id of the app-profile runtime condition that signals this outcome.",
+          "title": "Condition",
+          "type": "string"
+        },
+        "retryable": {
+          "default": false,
+          "title": "Retryable",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "code",
+        "description",
+        "condition"
+      ],
+      "title": "OutcomeSpec",
+      "type": "object"
+    },
+    "OutputDecl": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/ValueType"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "sensitivity": {
+          "$ref": "#/$defs/Sensitivity"
+        },
+        "pattern": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pattern"
+        }
+      },
+      "required": [
+        "type",
+        "description",
+        "sensitivity"
+      ],
+      "title": "OutputDecl",
+      "type": "object"
+    },
+    "ParamSpec": {
+      "additionalProperties": false,
+      "description": "One typed input the calling agent supplies per invocation.",
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/ValueType"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "required": {
+          "default": true,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "pattern": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pattern"
+        },
+        "enum": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Enum"
+        },
+        "minimum": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Minimum"
+        },
+        "maximum": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maximum"
+        },
+        "sensitivity": {
+          "$ref": "#/$defs/Sensitivity",
+          "default": "internal"
+        },
+        "example": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Only allowed for public/internal inputs.",
+          "title": "Example"
+        }
+      },
+      "required": [
+        "type",
+        "description"
+      ],
+      "title": "ParamSpec",
+      "type": "object"
+    },
+    "Sensitivity": {
+      "description": "How a value may be handled. Drives redaction in logs, evidence, and what the model sees.\n\npublic     product names, labels. Safe anywhere.\ninternal   operational identifiers (a member number). Logged; not masked.\npii        personal data (name, SSN, DOB, address, contact). Masked in logs, evidence, and model input.\nfinancial  nonpublic financial data (balances, amounts). Treated like pii.\nsecret     credentials, override codes. Never logged, never shown to the model, never persisted.",
+      "enum": [
+        "public",
+        "internal",
+        "pii",
+        "financial",
+        "secret"
+      ],
+      "title": "Sensitivity",
+      "type": "string"
+    },
+    "ValueType": {
+      "enum": [
+        "string",
+        "integer",
+        "decimal",
+        "money",
+        "date",
+        "boolean",
+        "enum"
+      ],
+      "title": "ValueType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "understudy/goal@1",
+      "default": "understudy/goal@1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "capability": {
+      "description": "Id the compiled capability will get.",
+      "title": "Capability",
+      "type": "string"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "goal": {
+      "description": "Natural-language goal. May reference {{inputs.x}}.",
+      "title": "Goal",
+      "type": "string"
+    },
+    "app_profile": {
+      "title": "App Profile",
+      "type": "string"
+    },
+    "entry": {
+      "description": "Screen the run starts from after sign-on.",
+      "title": "Entry",
+      "type": "string"
+    },
+    "inputs": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ParamSpec"
+      },
+      "title": "Inputs",
+      "type": "object"
+    },
+    "outputs": {
+      "additionalProperties": {
+        "$ref": "#/$defs/OutputDecl"
+      },
+      "title": "Outputs",
+      "type": "object"
+    },
+    "outcomes": {
+      "items": {
+        "$ref": "#/$defs/OutcomeSpec"
+      },
+      "title": "Outcomes",
+      "type": "array"
+    },
+    "limits": {
+      "$ref": "#/$defs/Limits"
+    }
+  },
+  "required": [
+    "capability",
+    "title",
+    "goal",
+    "app_profile",
+    "entry"
+  ],
+  "title": "GoalSpec",
+  "type": "object"
+}

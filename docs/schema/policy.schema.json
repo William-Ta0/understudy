@@ -1,0 +1,676 @@
+{
+  "$defs": {
+    "AttrLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "nth": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "0-based pick among multiple matches. Discouraged; flagged in review.",
+          "title": "Nth"
+        },
+        "why": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Why this locator is expected to be stable (written by the compiler).",
+          "title": "Why"
+        },
+        "by": {
+          "const": "attr",
+          "default": "attr",
+          "title": "By",
+          "type": "string"
+        },
+        "tag": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tag"
+        },
+        "attrs": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/TextMatch"
+              }
+            ]
+          },
+          "title": "Attrs",
+          "type": "object"
+        }
+      },
+      "required": [
+        "attrs"
+      ],
+      "title": "AttrLocator",
+      "type": "object"
+    },
+    "CssLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "nth": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "0-based pick among multiple matches. Discouraged; flagged in review.",
+          "title": "Nth"
+        },
+        "why": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Why this locator is expected to be stable (written by the compiler).",
+          "title": "Why"
+        },
+        "by": {
+          "const": "css",
+          "default": "css",
+          "title": "By",
+          "type": "string"
+        },
+        "css": {
+          "title": "Css",
+          "type": "string"
+        }
+      },
+      "required": [
+        "css"
+      ],
+      "title": "CssLocator",
+      "type": "object"
+    },
+    "DataPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "mask_in_evidence": {
+          "items": {
+            "$ref": "#/$defs/Sensitivity"
+          },
+          "title": "Mask In Evidence",
+          "type": "array"
+        },
+        "mask_for_model": {
+          "items": {
+            "$ref": "#/$defs/Sensitivity"
+          },
+          "title": "Mask For Model",
+          "type": "array"
+        },
+        "send_screenshots_to_model": {
+          "default": true,
+          "title": "Send Screenshots To Model",
+          "type": "boolean"
+        }
+      },
+      "title": "DataPolicy",
+      "type": "object"
+    },
+    "LabelLocator": {
+      "additionalProperties": false,
+      "description": "A control found by the label text a human reads next to it (or a value cell by its row label).",
+      "properties": {
+        "nth": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "0-based pick among multiple matches. Discouraged; flagged in review.",
+          "title": "Nth"
+        },
+        "why": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Why this locator is expected to be stable (written by the compiler).",
+          "title": "Why"
+        },
+        "by": {
+          "const": "label",
+          "default": "label",
+          "title": "By",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/TextMatch"
+            }
+          ],
+          "title": "Label"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Role"
+        }
+      },
+      "required": [
+        "label"
+      ],
+      "title": "LabelLocator",
+      "type": "object"
+    },
+    "ModePolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_actions": {
+          "items": {
+            "enum": [
+              "click",
+              "fill",
+              "select",
+              "check",
+              "press",
+              "wait",
+              "extract",
+              "dialog",
+              "navigate"
+            ],
+            "type": "string"
+          },
+          "title": "Allowed Actions",
+          "type": "array"
+        },
+        "irreversible": {
+          "description": "block: never. require_approval: pause for a human per invocation. allow: only for approved capabilities.",
+          "enum": [
+            "block",
+            "require_approval",
+            "allow"
+          ],
+          "title": "Irreversible",
+          "type": "string"
+        },
+        "max_steps": {
+          "default": 40,
+          "title": "Max Steps",
+          "type": "integer"
+        },
+        "max_seconds": {
+          "default": 900,
+          "title": "Max Seconds",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "allowed_actions",
+        "irreversible"
+      ],
+      "title": "ModePolicy",
+      "type": "object"
+    },
+    "PointLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "nth": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "0-based pick among multiple matches. Discouraged; flagged in review.",
+          "title": "Nth"
+        },
+        "why": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Why this locator is expected to be stable (written by the compiler).",
+          "title": "Why"
+        },
+        "by": {
+          "const": "point",
+          "default": "point",
+          "title": "By",
+          "type": "string"
+        },
+        "x": {
+          "title": "X",
+          "type": "integer"
+        },
+        "y": {
+          "title": "Y",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "title": "PointLocator",
+      "type": "object"
+    },
+    "Risk": {
+      "description": "Effect of a step on the system of record.\n\nread          no effect (extract, wait, checkpoint).\nreversible    navigation, form input, or a submit that does not commit a business change.\nirreversible  commits a business change (post, open, close, transfer). Gated by policy.",
+      "enum": [
+        "read",
+        "reversible",
+        "irreversible"
+      ],
+      "title": "Risk",
+      "type": "string"
+    },
+    "RiskRule": {
+      "additionalProperties": false,
+      "description": "Classifies controls by what a human reads on them. The first matching rule wins.",
+      "properties": {
+        "match": {
+          "discriminator": {
+            "mapping": {
+              "attr": "#/$defs/AttrLocator",
+              "css": "#/$defs/CssLocator",
+              "label": "#/$defs/LabelLocator",
+              "point": "#/$defs/PointLocator",
+              "role": "#/$defs/RoleLocator",
+              "table_cell": "#/$defs/TableCellLocator",
+              "text": "#/$defs/TextLocator"
+            },
+            "propertyName": "by"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/RoleLocator"
+            },
+            {
+              "$ref": "#/$defs/LabelLocator"
+            },
+            {
+              "$ref": "#/$defs/TextLocator"
+            },
+            {
+              "$ref": "#/$defs/TableCellLocator"
+            },
+            {
+              "$ref": "#/$defs/AttrLocator"
+            },
+            {
+              "$ref": "#/$defs/CssLocator"
+            },
+            {
+              "$ref": "#/$defs/PointLocator"
+            }
+          ],
+          "title": "Match"
+        },
+        "risk": {
+          "$ref": "#/$defs/Risk"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "match",
+        "risk",
+        "reason"
+      ],
+      "title": "RiskRule",
+      "type": "object"
+    },
+    "RoleLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "nth": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "0-based pick among multiple matches. Discouraged; flagged in review.",
+          "title": "Nth"
+        },
+        "why": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Why this locator is expected to be stable (written by the compiler).",
+          "title": "Why"
+        },
+        "by": {
+          "const": "role",
+          "default": "role",
+          "title": "By",
+          "type": "string"
+        },
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/TextMatch"
+            }
+          ],
+          "title": "Name"
+        }
+      },
+      "required": [
+        "role",
+        "name"
+      ],
+      "title": "RoleLocator",
+      "type": "object"
+    },
+    "Sensitivity": {
+      "description": "How a value may be handled. Drives redaction in logs, evidence, and what the model sees.\n\npublic     product names, labels. Safe anywhere.\ninternal   operational identifiers (a member number). Logged; not masked.\npii        personal data (name, SSN, DOB, address, contact). Masked in logs, evidence, and model input.\nfinancial  nonpublic financial data (balances, amounts). Treated like pii.\nsecret     credentials, override codes. Never logged, never shown to the model, never persisted.",
+      "enum": [
+        "public",
+        "internal",
+        "pii",
+        "financial",
+        "secret"
+      ],
+      "title": "Sensitivity",
+      "type": "string"
+    },
+    "TableCellLocator": {
+      "additionalProperties": false,
+      "description": "A data cell: the table is identified by its header texts, the row by key column values.",
+      "properties": {
+        "nth": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "0-based pick among multiple matches. Discouraged; flagged in review.",
+          "title": "Nth"
+        },
+        "why": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Why this locator is expected to be stable (written by the compiler).",
+          "title": "Why"
+        },
+        "by": {
+          "const": "table_cell",
+          "default": "table_cell",
+          "title": "By",
+          "type": "string"
+        },
+        "headers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Headers",
+          "type": "array"
+        },
+        "row": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/TextMatch"
+              }
+            ]
+          },
+          "title": "Row",
+          "type": "object"
+        },
+        "column": {
+          "title": "Column",
+          "type": "string"
+        }
+      },
+      "required": [
+        "headers",
+        "row",
+        "column"
+      ],
+      "title": "TableCellLocator",
+      "type": "object"
+    },
+    "TextLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "nth": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "0-based pick among multiple matches. Discouraged; flagged in review.",
+          "title": "Nth"
+        },
+        "why": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Why this locator is expected to be stable (written by the compiler).",
+          "title": "Why"
+        },
+        "by": {
+          "const": "text",
+          "default": "text",
+          "title": "By",
+          "type": "string"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/TextMatch"
+            }
+          ],
+          "title": "Text"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Role"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "TextLocator",
+      "type": "object"
+    },
+    "TextMatch": {
+      "additionalProperties": false,
+      "description": "A text predicate. Comparison is always whitespace- and case-insensitive.\n\n`value` may contain templates such as `{{inputs.member_id}}`; they are rendered before matching.\nA bare string in YAML means `mode: exact` for locators and `mode: contains` for text conditions.",
+      "properties": {
+        "value": {
+          "title": "Value",
+          "type": "string"
+        },
+        "mode": {
+          "default": "exact",
+          "enum": [
+            "exact",
+            "contains",
+            "regex"
+          ],
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "title": "TextMatch",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "understudy/policy@1",
+      "default": "understudy/policy@1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "description": {
+      "title": "Description",
+      "type": "string"
+    },
+    "allowed_origins": {
+      "description": "scheme://host[:port] the browser may talk to. Everything else is aborted.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Allowed Origins",
+      "type": "array"
+    },
+    "allowed_paths": {
+      "description": "Globs on URL path. A navigation must match one.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Allowed Paths",
+      "type": "array"
+    },
+    "denied_paths": {
+      "description": "Globs that are blocked even if allowed_paths match.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Denied Paths",
+      "type": "array"
+    },
+    "discovery": {
+      "$ref": "#/$defs/ModePolicy"
+    },
+    "replay": {
+      "$ref": "#/$defs/ModePolicy"
+    },
+    "risk_rules": {
+      "description": "Global rules, checked after the app profile's.",
+      "items": {
+        "$ref": "#/$defs/RiskRule"
+      },
+      "title": "Risk Rules",
+      "type": "array"
+    },
+    "data": {
+      "$ref": "#/$defs/DataPolicy"
+    }
+  },
+  "required": [
+    "id",
+    "description",
+    "allowed_origins",
+    "allowed_paths",
+    "discovery",
+    "replay"
+  ],
+  "title": "Policy",
+  "type": "object"
+}

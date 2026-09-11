@@ -1,0 +1,28 @@
+{
+  "id": "int-f41159",
+  "run_id": "dis-20260911-135207-8459",
+  "mode": "discovery",
+  "kind": "approval",
+  "reason": "Review screen for the new sub-account is displayed and verified (member {{inputs.member_id}}, Money Market Share, nickname \"Rainy day fund\", opening deposit [financial] funded from suffix 00, dividend rate 2.35%). The final step \"Confirm & Open Account\" is irreversible and blocked for me. Please review and, if approved, click \"Confirm & Open Account\" [m16], then hand the session back so I can read the confirmation number and new suffix.",
+  "context": {
+    "goal": "For member {{inputs.member_id}}, open a new sub-account of product {{inputs.product}} with the account nickname {{inputs.nickname}} and an opening deposit of {{inputs.opening_deposit}}, funded from the member's existing account with suffix {{inputs.fund_from}}. Continue to the review screen. On the review screen, first read the dividend rate, then ask a human operator to approve and perform the final confirmation, which is irreversible and not yours to do. When the operator hands back, read the confirmation number and the new account suffix from the confirmation screen, and finish.",
+    "capability": "keystone.member.open_share_account",
+    "turn": 13,
+    "screen": "subaccount_review",
+    "recent_actions": [
+      "8. fill textbox \"Account Nickname\" = {{inputs.nickname}} [flow] -> ok",
+      "9. fill textbox \"Opening Deposit\" = {{inputs.opening_deposit}} [flow] -> ok",
+      "10. select_option combobox \"Fund From\" = {{inputs.fund_from}} [flow] -> ok",
+      "11. click button \"Continue\" [flow] -> ok; the screen is now subaccount_review",
+      "12. extract cell \"2.35%\" -> dividend_rate -> ok: dividend_rate = '2.35%' (parsed as string)"
+    ]
+  },
+  "screenshot": "screens/014-intervention-approval.png",
+  "console_url": "http://127.0.0.1:8766/sessions/dis-20260911-135207-8459?token=Ar4WxPN4Gf4LuHSF",
+  "options": [
+    "resume",
+    "completed",
+    "abort"
+  ],
+  "created_at": "2026-09-11T05:54:55.410286Z"
+}

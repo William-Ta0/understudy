@@ -7,6 +7,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from urllib.parse import urlsplit
 
+from ..safety.policy import text_matches
 from ..schema import (
     AllCondition,
     AnyCondition,
@@ -20,7 +21,6 @@ from ..schema import (
     TextCondition,
     UrlCondition,
 )
-from ..safety.policy import text_matches
 from ..surface.base import Observation
 from ..surface.web import DialogPending, WebSurface
 from .values import Renderer

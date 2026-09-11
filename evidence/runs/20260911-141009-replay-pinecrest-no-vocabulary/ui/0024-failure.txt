@@ -1,0 +1,49 @@
+== frame "banner" · /t/pinecrest/banner.asp · ""
+  [b1] cell "Pinecrest Federal Credit Union Keystone Core 7.2 · Teller Workstation"
+  [b2] text "Pinecrest Federal Credit Union"
+  [b3] text "Keystone Core 7.2 · Teller Workstation"
+  [b4] link "Sign Off"
+== frame "nav" · /t/pinecrest/menu.asp · ""
+  [n2] cell "Functions"
+  [n3] button "Member Lookup" (clickable <td>)
+  [n4] button "Open Sub-Account" (clickable <td>)
+  [n5] button "Teller Transactions" (clickable <td>)
+  [n6] button "Reports" (clickable <td>)
+  [n7] button "Administration" (clickable <td>)
+== frame "main" · /t/pinecrest/mbrdtl.asp?m=100234&_k=… · "Keystone Core - Member Detail"
+  [m2] cell "Member Detail - 100234"
+  [m3] cell "Member #:"
+  [m4] cell "100234"
+  [m5] cell "Name:"
+  [m6] cell [pii]
+  [m7] cell "Member Since:"
+  [m8] cell "04/18/2011"
+  [m9] cell "SSN:"
+  [m10] cell [pii]
+  [m11] cell "Date of Birth:"
+  [m12] cell [pii]
+  [m13] cell "Address:"
+  [m14] cell [pii]
+  [m15] cell "Home Phone:"
+  [m16] cell [pii]
+  [m17] cell "E-Mail:"
+  [m18] cell [pii]
+  [m19] text "Accounts"
+  [m20] columnheader "Suffix"
+  [m21] columnheader "Description"
+  [m22] columnheader "Status"
+  [m23] columnheader "Ledger Balance"
+  [m24] columnheader "Available Balance"
+  [m25] cell "00" (column "Suffix", row "00")
+  [m26] cell "Primary Savings" (column "Description", row "00")
+  [m27] cell "Open" (column "Status", row "00")
+  [m28] cell [financial] (column "Ledger Balance", row "00")
+  [m29] cell [financial] (column "Available Balance", row "00")
+  [m30] cell "10" (column "Suffix", row "10")
+  [m31] cell "Share Draft Checking" (column "Description", row "10")
+  [m32] cell "Open" (column "Status", row "10")
+  [m33] cell [financial] (column "Ledger Balance", row "10")
+  [m34] cell [financial] (column "Available Balance", row "10")
+  [m35] link "Add Share Account"
+  [m36] link "Transaction History"
+  [m37] link "Print"

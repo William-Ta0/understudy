@@ -1,0 +1,57 @@
+{
+  "run_id": "rep-20260911-141002-6714",
+  "capability": {
+    "id": "keystone.member.lookup_balance",
+    "version": "1.0.0",
+    "content_hash": "sha256:bb1fca2cf4b25cf59ab689337067eb73c07c6493d6df45739ae63de55bc499a3"
+  },
+  "tenant": "lakeshore",
+  "status": "failed",
+  "failure": {
+    "code": "APP_ERROR",
+    "message": "server_error: Unhandled server exception (ASP.NET yellow screen).",
+    "step_id": "click_search",
+    "step_index": 2,
+    "observed": "Server Error in '/Keystone' Application. | screen=None, frames={'top': '/t/lakeshore/default.asp', 'banner': '/t/lakeshore/banner.asp', 'nav': '/t/lakeshore/menu.asp', 'main': '/t/lakeshore/mbrdtl.asp?m=100234&_k=0c06f1d8'}",
+    "retryable": true,
+    "evidence": {
+      "screenshot": "screens/001-failure-app_error.png",
+      "ui_map": "ui/0018-failure.txt"
+    },
+    "details": {
+      "condition": "server_error",
+      "code": "APP_ERROR",
+      "state": {
+        "screen": null,
+        "frames": {
+          "top": "/t/lakeshore/default.asp",
+          "banner": "/t/lakeshore/banner.asp",
+          "nav": "/t/lakeshore/menu.asp",
+          "main": "/t/lakeshore/mbrdtl.asp?m=100234&_k=0c06f1d8"
+        },
+        "heading": "Server Error in '/Keystone' Application."
+      }
+    }
+  },
+  "recoveries": [],
+  "warnings": [],
+  "interventions": [],
+  "steps": [
+    {
+      "id": "click_member_inquiry",
+      "status": "done",
+      "duration_ms": 343,
+      "locator": "role=button name=\"Member Inquiry\""
+    },
+    {
+      "id": "enter_member_number",
+      "status": "done",
+      "duration_ms": 441,
+      "locator": "label=\"Member Number\" role=textbox"
+    }
+  ],
+  "started_at": "2026-09-11T06:10:03.001452Z",
+  "finished_at": "2026-09-11T06:10:04.894054Z",
+  "duration_ms": 1892,
+  "evidence_dir": "/Users/williammac/Desktop/project/understudy/evidence/runs/20260911-141002-replay-lookup-app-error"
+}
